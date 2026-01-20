@@ -49,6 +49,163 @@ allowed-tools: [Read, Glob, Grep, Bash, Task, TodoWrite, Write, Edit, WebFetch, 
 
 ---
 
+## Context Window Management (Harvard Protocol)
+
+### Core Principle: Fresh Context + External Memory
+
+**The main Claude instance should operate with minimal context.**
+RLM serves as external memory - storing, retrieving, and summarizing information so the main agent can work efficiently.
+
+### Why Fresh Context Matters
+
+1. **Reduced hallucination** - Less old context = fewer conflicting signals
+2. **Better focus** - Current task gets full attention
+3. **Faster responses** - Smaller context = faster processing
+4. **Cleaner decisions** - No stale assumptions bleeding through
+
+### Context Budget Rules
+
+| Content Type | Keep in Context | Offload to RLM |
+|--------------|-----------------|----------------|
+| Current task description | YES | - |
+| Active file being edited | YES | - |
+| Current phase/status | YES | - |
+| Approved plan summary | YES (compressed) | Full plan in .uop/ |
+| Historical decisions | NO | .uop/history/decisions/ |
+| Past issues/solutions | NO | .uop/history/issues/ |
+| Codebase patterns | NO | .uop/history/patterns/ |
+| MCP interaction details | NO | .uop/sessions/MCP_LOG.md |
+| Completed task details | NO | Session files |
+
+### Store-Before-Clear Protocol
+
+Before any context-heavy operation completes, **always store first**:
+
+```python
+def complete_phase(phase_name, results):
+    # 1. STORE to RLM memory
+    write_to_session_file(f".uop/sessions/{session_id}/{phase_name}.md", results)
+
+    # 2. UPDATE INDEX with pointer
+    update_index(f"Phase {phase_name} complete - see sessions/{session_id}/")
+
+    # 3. COMPRESS for carry-forward
+    summary = compress_to_summary(results, max_tokens=200)
+
+    # 4. CLEAR detailed context (implicit - just don't reference it)
+    return summary  # Only summary carries forward
+```
+
+### RLM as Memory Manager
+
+RLM's role in context management:
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    MAIN CLAUDE AGENT                         │
+│  • Current task focus                                        │
+│  • Active decisions                                          │
+│  • Minimal context (~2000 tokens working memory)            │
+└────────────────────────┬────────────────────────────────────┘
+                         │
+        Store ↓          │           ↑ Retrieve
+                         │
+┌────────────────────────┴────────────────────────────────────┐
+│                    RLM MEMORY LAYER                          │
+│  .uop/                                                       │
+│  ├── INDEX.md          ← Always check first                 │
+│  ├── sessions/         ← Current work state                 │
+│  ├── history/          ← Past patterns & decisions          │
+│  └── summaries/        ← Compressed topic knowledge         │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### When to Query RLM (Retrieve)
+
+| Trigger | RLM Query |
+|---------|-----------|
+| Starting new task | "What patterns exist for {task_area}?" |
+| Hitting unexpected error | "Have we seen {error_type} before?" |
+| Making architectural decision | "What past decisions affect {component}?" |
+| Before implementing feature | "What issues occurred with similar features?" |
+| Context feels stale | "Summarize current session state" |
+
+### When to Store to RLM
+
+| Event | What to Store | Where |
+|-------|---------------|-------|
+| Phase complete | Phase summary + key decisions | sessions/{id}/ |
+| Issue resolved | Problem + solution + root cause | history/issues/ |
+| Decision made | Decision + rationale + context | history/decisions/ |
+| Pattern discovered | Pattern + examples + when to use | history/patterns/ |
+| MCP interaction | Tagged summary | sessions/{id}/MCP_LOG.md |
+
+### Session Handoff Protocol
+
+For long tasks that may exceed context or require breaks:
+
+```markdown
+## Session Handoff - {session_id}
+
+### Current State
+- **Phase**: 4 (Implementation)
+- **Task**: 3 of 5 complete
+- **Active Issue**: None
+
+### What's Done
+- [x] API endpoint created
+- [x] Database migration applied
+- [x] UI component built
+
+### What's Next
+- [ ] Wire up frontend
+- [ ] Code review pass
+
+### Key Context to Restore
+- Using React Query for data fetching (Decision D3)
+- Auth token stored in httpOnly cookie (Decision D1)
+
+### Files Modified This Session
+- src/api/users.ts (new)
+- src/components/UserList.tsx (new)
+- prisma/migrations/xxx (new)
+
+### Resume Command
+Read .uop/sessions/{session_id}/PLAN.md and continue from Task 4
+```
+
+### Context Refresh Points
+
+Force a context refresh (re-read from RLM) at these points:
+
+1. **Start of each phase** - Fresh start with only relevant context
+2. **After 10+ tool calls** - Accumulated context may be stale
+3. **After any user input** - User guidance may change direction
+4. **When stuck (2+ failed attempts)** - Fresh perspective needed
+5. **Before final validation** - Clean context for review
+
+### Compression Rules
+
+When carrying information forward, compress aggressively:
+
+| Original | Compressed |
+|----------|------------|
+| Full PRD (2000 tokens) | "PRD approved: Add OAuth with Google/GitHub, store in profiles table, redirect to /dashboard" (30 tokens) |
+| Code review findings (1500 tokens) | "Review: 3 issues fixed (type safety, missing null check, unused import)" (15 tokens) |
+| MCP log (1000 tokens) | "MCP: 5 DB queries, 2 schema checks, all successful" (10 tokens) |
+
+### Anti-Patterns to Avoid
+
+| Anti-Pattern | Problem | Solution |
+|--------------|---------|----------|
+| Keeping full PRD in context | Wastes tokens, stale info | Store in .uop, keep 1-line summary |
+| Re-reading same file repeatedly | Inefficient, fills context | Read once, store key facts |
+| Carrying forward error traces | Noise, confusion | Log to ISSUES.md, clear from context |
+| Not storing before phase change | Lost work on context reset | Always store-then-clear |
+| Querying RLM for current task | Unnecessary overhead | RLM = history, not current state |
+
+---
+
 ## Phase 1: Initialization
 
 ### 1.1 Assess Complexity
