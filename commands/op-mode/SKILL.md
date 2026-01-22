@@ -9,6 +9,354 @@ allowed-tools: [Read, Glob, Grep, Bash, Task, TodoWrite, Write, Edit, WebFetch, 
 
 **Unified workflow combining GSD planning, RLM analysis, Subagent execution, and MCP integration.**
 
+---
+
+## ⛔ GATE 0: REQUIRED READING (BEFORE ANYTHING ELSE)
+
+**You MUST read these files before starting ANY work. This is non-negotiable.**
+
+### Step 0.1: Read Skill Files (Based on Task Type)
+
+```
+╔════════════════════════════════════════════════════════════════════════════╗
+║  SKILL FILES - READ BEFORE IMPLEMENTATION                                   ║
+╠════════════════════════════════════════════════════════════════════════════╣
+║                                                                             ║
+║  UI/Frontend Work:                                                          ║
+║  □ Read: /mnt/skills/public/frontend-design/SKILL.md                       ║
+║                                                                             ║
+║  Document Generation:                                                       ║
+║  □ Read: /mnt/skills/public/docx/SKILL.md                                  ║
+║  □ Read: /mnt/skills/public/pdf/SKILL.md                                   ║
+║  □ Read: /mnt/skills/public/xlsx/SKILL.md                                  ║
+║  □ Read: /mnt/skills/public/pptx/SKILL.md                                  ║
+║                                                                             ║
+╚════════════════════════════════════════════════════════════════════════════╝
+```
+
+### Step 0.2: Read Core Subagent Files (ALWAYS)
+
+```
+╔════════════════════════════════════════════════════════════════════════════╗
+║  SUBAGENT FILES - READ THESE BEFORE PHASE 2                                 ║
+╠════════════════════════════════════════════════════════════════════════════╣
+║                                                                             ║
+║  ALWAYS READ (Every Session):                                               ║
+║  □ .claude/CLAUDE_CODE_TRAINING_GUIDE.md      ← Project standards           ║
+║  □ .claude/subagents/coordinator.md            ← Workflow coordination      ║
+║  □ CLAUDE.md (if exists in project root)       ← Project-specific rules     ║
+║                                                                             ║
+║  PLANNING PHASE:                                                            ║
+║  □ .claude/subagents/prd-generator.md          ← Requirements gathering     ║
+║  □ .claude/subagents/task-generator.md         ← Task breakdown             ║
+║                                                                             ║
+║  IMPLEMENTATION PHASE:                                                      ║
+║  □ .claude/subagents/implementation-processor.md ← Code execution           ║
+║                                                                             ║
+╚════════════════════════════════════════════════════════════════════════════╝
+```
+
+### Step 0.3: Read GSD Agent Files (Workflow Methodology)
+
+```
+╔════════════════════════════════════════════════════════════════════════════╗
+║  GSD AGENT FILES - WORKFLOW PATTERNS & METHODOLOGY                          ║
+╠════════════════════════════════════════════════════════════════════════════╣
+║                                                                             ║
+║  CORE GSD (Read for every session):                                         ║
+║  □ .claude/agents/gsd-executor.md           ← Deviation rules, auto-fix     ║
+║  □ .claude/agents/gsd-debugger.md           ← Scientific debugging method   ║
+║  □ .claude/agents/gsd-planner.md            ← Planning methodology          ║
+║  □ .claude/agents/gsd-verifier.md           ← Verification patterns         ║
+║                                                                             ║
+║  RESEARCH & ANALYSIS (When investigating):                                  ║
+║  □ .claude/agents/gsd-codebase-mapper.md    ← Understanding codebase        ║
+║  □ .claude/agents/gsd-phase-researcher.md   ← Phase-specific research       ║
+║  □ .claude/agents/gsd-project-researcher.md ← Project context research      ║
+║  □ .claude/agents/gsd-research-synthesizer.md ← Synthesizing findings       ║
+║                                                                             ║
+║  PLANNING & VALIDATION:                                                     ║
+║  □ .claude/agents/gsd-plan-checker.md       ← Validating plans              ║
+║  □ .claude/agents/gsd-integration-checker.md ← Integration validation       ║
+║  □ .claude/agents/gsd-roadmapper.md         ← Roadmap planning              ║
+║                                                                             ║
+╚════════════════════════════════════════════════════════════════════════════╝
+```
+
+### Step 0.4: Read Reviewer Files (Based on Change Type)
+
+```
+╔════════════════════════════════════════════════════════════════════════════╗
+║  CODE REVIEWER FILES - READ BEFORE MAKING CHANGES                           ║
+╠════════════════════════════════════════════════════════════════════════════╣
+║                                                                             ║
+║  Bug Fixes:                                                                 ║
+║  □ .claude/subagents/coding/bug-hunter.md      ← Root cause analysis        ║
+║                                                                             ║
+║  API/Backend Changes:                                                       ║
+║  □ .claude/subagents/coding/backend-reviewer.md ← API/DB patterns           ║
+║                                                                             ║
+║  UI/Component Changes:                                                      ║
+║  □ .claude/subagents/coding/frontend-reviewer.md ← React/UI patterns        ║
+║                                                                             ║
+║  Auth/Security Changes:                                                     ║
+║  □ .claude/subagents/coding/security-analyzer.md ← RLS/Auth patterns        ║
+║                                                                             ║
+║  Performance Work:                                                          ║
+║  □ .claude/subagents/coding/performance-optimizer.md ← Optimization         ║
+║                                                                             ║
+╚════════════════════════════════════════════════════════════════════════════╝
+```
+
+### Step 0.5: Routing Table - Which Files to Read
+
+| Task Type | Skill File | GSD Agents | Primary Reviewer | Secondary Reviewer |
+|-----------|------------|------------|------------------|--------------------|
+| UI/Component | frontend-design/SKILL.md | gsd-executor, gsd-verifier | frontend-reviewer.md | security-analyzer.md |
+| API/Endpoint | - | gsd-executor, gsd-verifier | backend-reviewer.md | security-analyzer.md |
+| Database/Schema | - | gsd-executor, gsd-planner | backend-reviewer.md | security-analyzer.md |
+| Bug Fix | - | gsd-debugger, gsd-verifier | bug-hunter.md | (area-specific) |
+| Auth/RLS | - | gsd-executor, gsd-verifier | security-analyzer.md | backend-reviewer.md |
+| Performance | - | gsd-executor, gsd-verifier | performance-optimizer.md | backend-reviewer.md |
+| Full Feature | frontend-design/SKILL.md | ALL GSD agents | ALL reviewers | ALL reviewers |
+| Investigation | - | gsd-codebase-mapper, gsd-research-synthesizer | bug-hunter.md | - |
+
+### Step 0.6: Confirm Reading (MANDATORY)
+
+Before proceeding to GATE 1, you MUST output:
+
+```markdown
+## OP Mode Session: Files Read Confirmation
+
+### Project Context
+- [x] .claude/CLAUDE_CODE_TRAINING_GUIDE.md
+- [x] .claude/subagents/coordinator.md
+- [ ] CLAUDE.md (not found / found and read)
+
+### Skill Files (for this task)
+- [x] /mnt/skills/public/frontend-design/SKILL.md
+
+### GSD Agent Files (for this task)
+- [x] .claude/agents/gsd-executor.md
+- [x] .claude/agents/gsd-debugger.md
+- [x] .claude/agents/gsd-verifier.md
+- [x] .claude/agents/gsd-planner.md
+
+### Subagent Files (for this task)
+- [x] .claude/subagents/prd-generator.md
+- [x] .claude/subagents/task-generator.md
+- [x] .claude/subagents/coding/frontend-reviewer.md
+- [x] .claude/subagents/coding/security-analyzer.md
+
+### RLM Index
+- [x] .uop/INDEX.md
+
+**All required files read. Ready to proceed with: {task_description}**
+```
+
+**If you have NOT output this confirmation, STOP and read the files first.**
+
+---
+
+## ⛔ CRITICAL: HARD GATES
+
+**These gates are NON-NEGOTIABLE. You CANNOT skip them regardless of task urgency.**
+
+### GATE 1: Session Initialization (After GATE 0 Complete)
+
+You MUST complete these steps before analyzing the task:
+
+```
+□ TodoWrite initialized with 7-phase template
+□ Read .uop/INDEX.md (create if missing)
+□ Create session folder: .uop/sessions/{session-id}/
+□ Initialize DECISION_TREE.md in session folder
+□ Initialize MCP_LOG.md in session folder
+```
+
+**STOP. Do not proceed until all boxes are checked.**
+
+---
+
+### GATE 2: RLM Query (Before Planning)
+
+**⛔ You CANNOT proceed to planning without querying RLM history first.**
+
+You MUST query these RLM locations and document findings:
+
+```
+╔════════════════════════════════════════════════════════════════════════════╗
+║  RLM MEMORY QUERIES - MANDATORY BEFORE PHASE 2                              ║
+╠════════════════════════════════════════════════════════════════════════════╣
+║                                                                             ║
+║  ALWAYS QUERY (Every Session):                                              ║
+║  □ .uop/INDEX.md                    ← Quick reference, load first          ║
+║                                                                             ║
+║  QUERY FOR HISTORICAL CONTEXT:                                              ║
+║  □ .uop/history/patterns/           ← What patterns exist for this area?   ║
+║  □ .uop/history/decisions/          ← What past decisions affect this?     ║
+║  □ .uop/history/issues/             ← What problems occurred before?       ║
+║                                                                             ║
+║  CHECK FOR EXISTING SUMMARIES:                                              ║
+║  □ .uop/summaries/{topic}.md        ← Compressed knowledge on topic        ║
+║                                                                             ║
+║  DOCUMENT IN SESSION:                                                       ║
+║  □ Write findings to .uop/sessions/{session-id}/RLM_CONTEXT.md             ║
+║                                                                             ║
+╚════════════════════════════════════════════════════════════════════════════╝
+```
+
+### RLM Query Output (MANDATORY)
+
+Before proceeding to Phase 2, you MUST output:
+
+```markdown
+## RLM Query Results
+
+### INDEX.md Summary
+- {key_pointers_found}
+
+### Relevant Patterns Found
+- Pattern: {pattern_name} - {brief_description}
+- Pattern: {pattern_name} - {brief_description}
+
+### Relevant Past Decisions
+- Decision D{X}: {decision_summary}
+- Decision D{X}: {decision_summary}
+
+### Known Issues in This Area
+- Issue: {issue_summary} - Resolution: {how_it_was_fixed}
+
+### Summaries Loaded
+- {topic}.md: {key_points}
+
+### RLM Context Saved To
+- .uop/sessions/{session-id}/RLM_CONTEXT.md
+
+**RLM query complete. Proceeding to Phase 2 with historical context.**
+```
+
+**If you skip RLM queries, your plan will repeat past mistakes. STOP and query.**
+
+**If .uop/ folder doesn't exist, CREATE IT with proper structure before proceeding.**
+
+---
+
+### GATE 3: Subagent Consultation (Before ANY Code Change)
+
+You MUST route changes through reviewers before applying:
+
+```
+For EVERY file modification:
+□ Identify relevant reviewer(s) from routing table
+□ Generate patch proposal (do NOT apply yet)
+□ Get reviewer assessment
+□ Log decision in DECISION_TREE.md
+□ THEN apply the change
+```
+
+**Routing Table:**
+| Change Type | Primary Reviewer | Secondary |
+|-------------|------------------|-----------|
+| API/Backend | backend-reviewer | security-analyzer |
+| UI/Component | frontend-reviewer | frontend-designer |
+| Database | backend-reviewer | security-analyzer |
+| Bug fix | bug-hunter | (area-specific) |
+| Auth/Security | security-analyzer | backend-reviewer |
+
+**NEVER apply code changes without reviewer consultation. STOP and consult.**
+
+---
+
+### GATE 4: MCP Logging (Every Tool Call)
+
+You MUST log every MCP interaction:
+
+```
+After EVERY MCP tool call:
+□ Log to .uop/sessions/{session-id}/MCP_LOG.md
+□ Use format: [timestamp] [TAG] tool_name
+□ Include: Input summary, Result summary, Context
+```
+
+**Tags:** DB-READ, DB-WRITE, DB-SCHEMA, PAY-READ, PAY-WRITE, UI-NAV, UI-CHECK, UI-ACTION
+
+**If you don't log MCP calls, you lose audit trail. STOP and log.**
+
+---
+
+### GATE 5: Decision Tree Updates (Every Decision)
+
+You MUST update decision tree for every choice:
+
+```
+When ANY decision is made:
+□ Add entry to DECISION_TREE.md
+□ Include: ID, Decision, Rationale, Status
+□ Link related decisions
+□ Note if change from original plan
+```
+
+**Decisions without documentation don't exist. STOP and document.**
+
+---
+
+## Pre-Flight Checklist (Before Every Session)
+
+**Print this checklist and mark items as you complete them:**
+
+```
+╔══════════════════════════════════════════════════════════════╗
+║  OP MODE PRE-FLIGHT CHECKLIST                                 ║
+╠══════════════════════════════════════════════════════════════╣
+║  □ 1. TodoWrite initialized with 7 phases                    ║
+║  □ 2. .uop/INDEX.md read (or created)                        ║
+║  □ 3. Session folder created                                  ║
+║  □ 4. DECISION_TREE.md initialized                           ║
+║  □ 5. MCP_LOG.md initialized                                  ║
+║  □ 6. RLM history queried                                     ║
+║  □ 7. Relevant subagent files identified                     ║
+╠══════════════════════════════════════════════════════════════╣
+║  ALL BOXES MUST BE CHECKED BEFORE PHASE 2                    ║
+╚══════════════════════════════════════════════════════════════╝
+```
+
+---
+
+## Workflow Enforcement Rules
+
+### Rule 1: No File Writes Without Review
+```
+IF action == "Write" OR action == "Edit":
+    STOP
+    CHECK: Has reviewer been consulted?
+    IF NO: Consult reviewer first
+    IF YES: Proceed with logged decision
+```
+
+### Rule 2: No Phase Skipping
+```
+Phase order is: 1 → 2 → 3 → 4 → 5 → 6 → 7
+You CANNOT jump from Phase 2 to Phase 4
+Each phase has exit criteria that MUST be met
+```
+
+### Rule 3: User Touchpoints Are Mandatory
+```
+Phase 3 (Plan Approval): MUST present to user, MUST wait for approval
+Phase 7 (Final Report): MUST present to user, MUST wait for approval
+These are NOT optional even for "simple" tasks
+```
+
+### Rule 4: Iteration Limits Are Hard
+```
+Attempt 1 → Attempt 2 → Attempt 3 (Team) → Attempt 4 (Final) → ESCALATE
+You CANNOT try attempt 5, 6, 7...
+After 4 failures: STOP, document, escalate
+```
+
+---
+
 ## Core Principles
 
 1. **Two User Touchpoints Only**: Plan Approval + Final Validation
@@ -208,6 +556,8 @@ When carrying information forward, compress aggressively:
 
 ## Phase 1: Initialization
 
+### ⛔ GATE CHECK: Did you complete Pre-Flight Checklist? If NO, go back.
+
 ### 1.1 Assess Complexity
 
 ```
@@ -216,32 +566,76 @@ MEDIUM:   2-5 files, defined boundaries → RLM targeted scan
 COMPLEX:  6+ files, cross-cutting       → Full RLM recursive analysis
 ```
 
-### 1.2 Load Memory
+### 1.2 Load Memory (MANDATORY - NO EXCEPTIONS)
+
+**⛔ You CANNOT skip this step. RLM is your external memory.**
 
 ```bash
-# Always start with INDEX
+# STEP 1: Always start with INDEX
 Read(.uop/INDEX.md)
+# If .uop/INDEX.md doesn't exist, CREATE the .uop/ structure first
 
-# Check for relevant history
+# STEP 2: Check for relevant summaries
 if INDEX mentions related_topic:
     Read(.uop/summaries/{related_topic}.md)
+
+# STEP 3: Check for active session state
+if resuming_session:
+    Read(.uop/sessions/{session-id}/PLAN.md)
+    Read(.uop/sessions/{session-id}/DECISION_TREE.md)
 ```
 
-### 1.3 RLM Historical Query
+**What to look for in INDEX.md:**
+- Pointers to relevant patterns
+- Active session references
+- Known problem areas
+- Recent decision summaries
 
-For MEDIUM/COMPLEX tasks, RLM queries:
+**If INDEX.md is empty or missing:** This is a fresh project. Create the .uop/ structure:
+```
+.uop/
+├── INDEX.md              # Create with basic template
+├── sessions/             # Create empty folder
+├── history/
+│   ├── decisions/        # Create empty folder
+│   ├── issues/           # Create empty folder
+│   └── patterns/         # Create empty folder
+└── summaries/            # Create empty folder
+```
+
+### 1.3 RLM Historical Query (MANDATORY for MEDIUM/COMPLEX tasks)
+
+**⛔ For any task touching 2+ files, you MUST query history before planning.**
 
 ```
-Question: "What patterns, decisions, and issues relate to {task_area}?"
-Sources:
-  - .uop/history/decisions/
-  - .uop/history/issues/
-  - .uop/history/patterns/
+╔════════════════════════════════════════════════════════════════════════════╗
+║  RLM HISTORICAL QUERY - ASK THESE QUESTIONS                                 ║
+╠════════════════════════════════════════════════════════════════════════════╣
+║                                                                             ║
+║  1. "What patterns exist for {task_area}?"                                  ║
+║     → Check: .uop/history/patterns/                                         ║
+║                                                                             ║
+║  2. "What past decisions affect {component}?"                               ║
+║     → Check: .uop/history/decisions/                                        ║
+║                                                                             ║
+║  3. "What issues have occurred with {feature_area}?"                        ║
+║     → Check: .uop/history/issues/                                           ║
+║                                                                             ║
+║  4. "Is there existing documentation on {topic}?"                           ║
+║     → Check: .uop/summaries/                                                ║
+║                                                                             ║
+╚════════════════════════════════════════════════════════════════════════════╝
 ```
+
+**You MUST document findings in `.uop/sessions/{session-id}/RLM_CONTEXT.md` before Phase 2.**
+
+**If no relevant history exists:** Document "No prior patterns/decisions/issues found for {area}" - this is still valuable context.
 
 ---
 
 ## Phase 2: Planning (RLM Active Partner)
+
+### ⛔ GATE CHECK: Did you query RLM history? If NO, go back to Phase 1.3.
 
 ### 2.1 Generate PRD
 
@@ -252,7 +646,9 @@ Task(
 )
 ```
 
-### 2.2 RLM Planning Participation
+### 2.2 RLM Planning Participation (MANDATORY)
+
+**⛔ RLM MUST actively participate in planning. This is not optional.**
 
 RLM actively participates by:
 
@@ -262,11 +658,51 @@ RLM actively participates by:
 4. **Flagging areas** that caused issues previously
 
 ```
-# RLM Planning Query
-Question: "Review this PRD against codebase patterns. What conflicts, risks, or relevant precedents exist?"
-Depth: 2
-Chunks: Targeted to affected areas
+╔════════════════════════════════════════════════════════════════════════════╗
+║  RLM PLANNING REVIEW - MUST COMPLETE BEFORE TASK LIST                       ║
+╠════════════════════════════════════════════════════════════════════════════╣
+║                                                                             ║
+║  □ Review PRD against .uop/history/patterns/                               ║
+║    → Does this conflict with established patterns?                          ║
+║                                                                             ║
+║  □ Review PRD against .uop/history/decisions/                              ║
+║    → Does this contradict past decisions?                                   ║
+║                                                                             ║
+║  □ Review PRD against .uop/history/issues/                                 ║
+║    → Are we about to repeat a past mistake?                                 ║
+║                                                                             ║
+║  □ Document conflicts/risks in session PLAN.md                             ║
+║                                                                             ║
+╚════════════════════════════════════════════════════════════════════════════╝
 ```
+
+### RLM Planning Output (MANDATORY)
+
+Before generating task list, you MUST output:
+
+```markdown
+## RLM Planning Review
+
+### Pattern Conflicts
+- [ ] No conflicts found / [X] Conflicts identified:
+  - {pattern} conflicts with {proposed_approach}
+
+### Decision Conflicts
+- [ ] No conflicts found / [X] Conflicts identified:
+  - Decision D{X} conflicts with {proposed_approach}
+
+### Risk Flags from Past Issues
+- [ ] No risks found / [X] Risks identified:
+  - Past issue "{issue}" suggests risk of {problem}
+
+### RLM Recommendations
+- Approach: {recommended_approach_based_on_history}
+- Avoid: {anti-patterns_from_past_issues}
+
+**RLM review complete. Proceeding with task generation.**
+```
+
+**If RLM identifies conflicts, you MUST address them before proceeding.**
 
 ### 2.3 Generate Task List
 
@@ -277,7 +713,7 @@ Task(
 )
 ```
 
-### 2.4 Decision Tree Initialization
+### 2.4 Decision Tree Initialization (MANDATORY)
 
 Create `.uop/sessions/{session-id}/DECISION_TREE.md`:
 
@@ -294,9 +730,13 @@ Create `.uop/sessions/{session-id}/DECISION_TREE.md`:
 |-----------|-------------|--------|---------|--------------|
 ```
 
+**Do NOT proceed to Phase 3 without DECISION_TREE.md created.**
+
 ---
 
 ## Phase 3: Plan Approval (USER TOUCHPOINT 1)
+
+### ⛔ THIS IS MANDATORY. You CANNOT skip user approval.
 
 ### Present to User
 
@@ -333,9 +773,13 @@ Create `.uop/sessions/{session-id}/DECISION_TREE.md`:
 - **Modifications**: Update plan, re-present key changes
 - **Rejected**: Archive session, end workflow
 
+**WAIT for user response. Do NOT proceed without explicit approval.**
+
 ---
 
 ## Phase 4: Autonomous Implementation
+
+### ⛔ GATE CHECK: Did user approve plan in Phase 3? If NO, do not proceed.
 
 ### 4.1 Authority Matrix
 
@@ -354,11 +798,20 @@ Create `.uop/sessions/{session-id}/DECISION_TREE.md`:
 
 ```python
 for task in task_list:
+    # ⛔ GATE: Consult reviewer BEFORE implementation
+    reviewers = identify_reviewers(task)
+    for reviewer in reviewers:
+        assessment = consult_reviewer(reviewer, task)
+        log_to_decision_tree(assessment)
+
     # Execute implementation
     result = Task(
         subagent_type="implementation-processor",
-        prompt=f"Implement: {task}\nContext: {decision_tree}"
+        prompt=f"Implement: {task}\nContext: {decision_tree}\nReviewer Input: {assessment}"
     )
+
+    # ⛔ GATE: Log MCP interactions
+    log_mcp_calls(result.mcp_calls)
 
     # Run code review
     reviews = parallel_review(result.files_changed)
@@ -367,12 +820,14 @@ for task in task_list:
     for finding in reviews:
         if finding.severity == "CRITICAL":
             apply_fix(finding)  # Auto-fix
+            log_to_decision_tree(finding, "AUTO-FIX")
         elif finding.type in ["DESIGN", "UX", "SCOPE"]:
             queue_for_user(finding)  # Pause
         else:
             apply_fix(finding)  # Auto-fix
+            log_to_decision_tree(finding, "AUTO-FIX")
 
-    # Update documentation
+    # Update documentation (MANDATORY)
     update_decision_tree(task.decisions)
     update_issues(task.issues)
 ```
@@ -401,7 +856,7 @@ for task in task_list:
          │ No
          ▼
 ┌─────────────────┐
-│ Auto-Fix & Log  │
+│ Auto-Fix & Log  │ ← MUST log to DECISION_TREE.md
 └─────────────────┘
 ```
 
@@ -409,7 +864,7 @@ for task in task_list:
 
 ## Phase 5: Iteration Limit Protocol
 
-### 5.1 Attempt Tracking
+### 5.1 Attempt Tracking (MANDATORY)
 
 ```markdown
 # .uop/sessions/{session-id}/ISSUES.md
@@ -427,7 +882,7 @@ for task in task_list:
 - **Assigned**: {subagent_or_user}
 ```
 
-### 5.2 Escalation Protocol
+### 5.2 Escalation Protocol (HARD LIMIT: 4 ATTEMPTS)
 
 ```
 Attempt 1: Try solution
@@ -438,7 +893,7 @@ Attempt 3: Consult subagent team for fresh perspective
     ↓ Failed
 Attempt 4: Final attempt with team recommendation
     ↓ Failed
-ESCALATE:
+ESCALATE: ⛔ STOP HERE. No attempt 5.
     - Log to Linear (if available)
     - Classify as BLOCKING or NON-BLOCKING
     - If BLOCKING: Stop, present to user
@@ -526,9 +981,7 @@ mcp__plugin_playwright_playwright__browser_snapshot()
 # - Responsive behavior (if applicable)
 ```
 
-### 6.4 Self-Test Checklist
-
-Before returning to user, verify:
+### 6.4 Self-Test Checklist (MANDATORY before Phase 7)
 
 ```markdown
 ## Pre-Return Checklist
@@ -543,9 +996,13 @@ Before returning to user, verify:
 - [ ] MCP log complete
 ```
 
+**All boxes MUST be checked before proceeding to Phase 7.**
+
 ---
 
 ## Phase 7: Final Validation (USER TOUCHPOINT 2)
+
+### ⛔ THIS IS MANDATORY. You CANNOT skip final report.
 
 ### Present Final Report
 
@@ -583,6 +1040,11 @@ Before returning to user, verify:
 ### Visual Validation
 {screenshot_or_description}
 
+### RLM Updates Made
+- Patterns saved: {list}
+- Decisions logged: {list}
+- Issues documented: {list}
+
 ---
 **Ready for your review and approval.**
 ```
@@ -590,6 +1052,8 @@ Before returning to user, verify:
 ---
 
 ## MCP Logging Protocol
+
+### ⛔ EVERY MCP call MUST be logged. No exceptions.
 
 ### Log Format
 
@@ -638,13 +1102,15 @@ Before returning to user, verify:
 
 ## Decision Tree Management
 
+### ⛔ Every decision MUST be logged. Undocumented decisions don't exist.
+
 ### Change Detection
 
 When implementation reveals decision needs to change:
 
 ```python
 def handle_decision_change(old_decision, new_decision, reason):
-    # Log the change
+    # Log the change (MANDATORY)
     log_to_decision_tree(old_decision, new_decision, reason)
 
     # Assess impact
@@ -690,31 +1156,156 @@ def handle_decision_change(old_decision, new_decision, reason):
 
 ## RLM Auto-Update Protocol
 
-When user provides guidance, RLM automatically updates:
+**⛔ RLM updates are MANDATORY at session end. You CANNOT complete a session without updating RLM.**
 
-1. **Decision Tree**: New decisions logged
-2. **INDEX.md**: Pointers updated if new patterns
-3. **history/patterns/**: New patterns saved
-4. **Relevant summaries**: Topic summaries refreshed
+### What MUST Be Saved to RLM
+
+```
+╔════════════════════════════════════════════════════════════════════════════╗
+║  RLM SAVE REQUIREMENTS - MANDATORY BEFORE SESSION COMPLETE                  ║
+╠════════════════════════════════════════════════════════════════════════════╣
+║                                                                             ║
+║  PATTERNS (Save to .uop/history/patterns/):                                ║
+║  □ Any new coding pattern discovered                                        ║
+║  □ Any successful approach that could be reused                             ║
+║  □ Any anti-pattern identified (what NOT to do)                            ║
+║                                                                             ║
+║  DECISIONS (Save to .uop/history/decisions/):                              ║
+║  □ All decisions from DECISION_TREE.md                                      ║
+║  □ Why each decision was made                                               ║
+║  □ What alternatives were considered                                        ║
+║                                                                             ║
+║  ISSUES (Save to .uop/history/issues/):                                    ║
+║  □ Any issue encountered and how it was resolved                           ║
+║  □ Root cause analysis                                                      ║
+║  □ Prevention strategies for future                                         ║
+║                                                                             ║
+║  INDEX (Update .uop/INDEX.md):                                             ║
+║  □ Add pointers to new patterns                                             ║
+║  □ Add pointers to significant decisions                                    ║
+║  □ Update "Recent Sessions" section                                        ║
+║                                                                             ║
+╚════════════════════════════════════════════════════════════════════════════╝
+```
+
+### RLM Save Format
+
+**For Patterns (.uop/history/patterns/{pattern-name}.md):**
+```markdown
+# Pattern: {Pattern Name}
+
+## When to Use
+{description_of_when_this_applies}
+
+## Implementation
+{code_or_approach}
+
+## Examples
+- {example_1}
+- {example_2}
+
+## Anti-Patterns (What NOT to Do)
+- {anti_pattern_1}
+
+## Source Session
+- Session: {session-id}
+- Date: {date}
+```
+
+**For Decisions (.uop/history/decisions/{decision-id}.md):**
+```markdown
+# Decision: {Decision Title}
+
+## Context
+{what_prompted_this_decision}
+
+## Decision
+{what_was_decided}
+
+## Rationale
+{why_this_was_chosen}
+
+## Alternatives Considered
+- {alternative_1}: {why_rejected}
+- {alternative_2}: {why_rejected}
+
+## Impact
+{what_this_affects}
+
+## Source Session
+- Session: {session-id}
+- Date: {date}
+```
+
+**For Issues (.uop/history/issues/{issue-id}.md):**
+```markdown
+# Issue: {Issue Title}
+
+## Problem
+{what_went_wrong}
+
+## Root Cause
+{why_it_happened}
+
+## Solution
+{how_it_was_fixed}
+
+## Prevention
+{how_to_avoid_in_future}
+
+## Source Session
+- Session: {session-id}
+- Date: {date}
+```
+
+### Automatic Update Triggers
 
 ```python
+def on_session_complete():
+    # MANDATORY: Save all session learnings
+    save_patterns_to_history()
+    save_decisions_to_history()
+    save_issues_to_history()
+    update_index_with_session_summary()
+
 def on_user_guidance(guidance):
-    # Extract decisions and patterns
+    # Extract and save immediately
     decisions = extract_decisions(guidance)
     patterns = extract_patterns(guidance)
 
-    # Update decision tree
     for decision in decisions:
-        update_decision_tree(decision)
+        save_to_decision_tree(decision)
+        save_to_history_decisions(decision)
 
-    # Save patterns for future
     for pattern in patterns:
-        save_pattern(pattern)
+        save_to_history_patterns(pattern)
 
-    # Refresh INDEX if significant
-    if len(patterns) > 0:
-        refresh_index()
+    refresh_index()
 ```
+
+### RLM Update Confirmation (MANDATORY in Final Report)
+
+Your Phase 7 Final Report MUST include:
+
+```markdown
+### RLM Updates Made
+
+**Patterns Saved:**
+- .uop/history/patterns/{pattern-1}.md - {description}
+- .uop/history/patterns/{pattern-2}.md - {description}
+
+**Decisions Logged:**
+- .uop/history/decisions/{decision-1}.md - {summary}
+
+**Issues Documented:**
+- .uop/history/issues/{issue-1}.md - {summary}
+
+**INDEX.md Updated:**
+- [x] Added pointers to new patterns
+- [x] Added session summary
+```
+
+**If you have NOT saved to RLM, the session is INCOMPLETE.**
 
 ---
 
@@ -725,7 +1316,7 @@ def on_user_guidance(guidance):
 OP Mode leverages GSD for:
 - **Deviation Rules**: Auto-fix bugs, ask about architecture
 - **Checkpoint Protocol**: Verify before continuing
-- **Debug File Protocol**: Track issue status
+- **Atomic Commits**: One logical change per commit
 
 ### RLM-Coder Integration
 
@@ -742,6 +1333,228 @@ OP Mode coordinates:
 - **Task Generator**: Task breakdown
 - **Implementation Processor**: Code execution
 - **Code Reviewers**: Quality gates
+
+---
+
+## Progress Display Protocol
+
+### ⛔ CRITICAL: ALWAYS-VISIBLE PROGRESS (NON-NEGOTIABLE)
+
+**Every single response MUST include a progress indicator.** This is not optional. Users must NEVER lose track of where they are in the workflow.
+
+### The Golden Rule
+
+```
+╔════════════════════════════════════════════════════════════════════════════╗
+║  EVERY RESPONSE = PROGRESS BAR + CURRENT TASK + REMAINING ITEMS            ║
+║                                                                             ║
+║  No exceptions. No "I'll update later." EVERY. SINGLE. RESPONSE.           ║
+╚════════════════════════════════════════════════════════════════════════════╝
+```
+
+---
+
+### Progress Bar Formats (Use Appropriate Size)
+
+**Compact (for mid-work updates):**
+```
+⟦■■■■□□□⟧ Phase 4/7 │ Task 3/8 │ Implementing user auth
+```
+
+**Standard (for task transitions):**
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📊 PROGRESS: ████████████░░░░░░░░ 57% │ Phase 4/7 │ Task 3/8
+   Current: Implementing user authentication endpoint
+   Next up: Add input validation
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+
+**Full Dashboard (for phase transitions & user touchpoints):**
+```
+╔══════════════════════════════════════════════════════════════════════════╗
+║  OP MODE PROGRESS DASHBOARD                                               ║
+╠══════════════════════════════════════════════════════════════════════════╣
+║  Session: op-2026-01-22-001                                               ║
+║  Goal: {original_task_description}                                        ║
+╠══════════════════════════════════════════════════════════════════════════╣
+║                                                                           ║
+║  OVERALL PROGRESS                                                         ║
+║  ████████████████░░░░░░░░░░░░░░  Phase 4 of 7  (Implementation)          ║
+║                                                                           ║
+╠══════════════════════════════════════════════════════════════════════════╣
+║  PHASE STATUS                           │  CURRENT TASK BREAKDOWN         ║
+║  ──────────────────────────────────     │  ─────────────────────────────  ║
+║  [✓] 1. Initialization                  │  Phase 4 Tasks:                 ║
+║  [✓] 2. Planning                        │  [✓] 4.1 Create API route       ║
+║  [✓] 3. Plan Approval                   │  [✓] 4.2 Add database query     ║
+║  [→] 4. Implementation  ← YOU ARE HERE  │  [→] 4.3 Implement auth  ← NOW  ║
+║  [ ] 5. Issue Resolution                │  [ ] 4.4 Add validation         ║
+║  [ ] 6. Validation                      │  [ ] 4.5 Error handling         ║
+║  [ ] 7. Final Report                    │  [ ] 4.6 Write tests            ║
+║                                         │                                  ║
+╠══════════════════════════════════════════════════════════════════════════╣
+║  REMAINING WORK SUMMARY                                                   ║
+║  • Current phase: 4 tasks remaining                                       ║
+║  • After this phase: 3 phases (Issues → Validation → Report)             ║
+║  • Known blockers: None                                                   ║
+╚══════════════════════════════════════════════════════════════════════════╝
+```
+
+---
+
+### Hierarchical Task Expansion
+
+When tasks are broken down, the todo list MUST show the hierarchy:
+
+**Initial (Phase-level only):**
+```
+TodoWrite([
+  { content: "Phase 1: Initialization", status: "completed", activeForm: "Initializing" },
+  { content: "Phase 2: Planning", status: "completed", activeForm: "Planning" },
+  { content: "Phase 3: Plan Approval [USER]", status: "completed", activeForm: "Awaiting approval" },
+  { content: "Phase 4: Implementation", status: "in_progress", activeForm: "Implementing" },
+  { content: "Phase 5: Issue Resolution", status: "pending", activeForm: "Resolving issues" },
+  { content: "Phase 6: Validation", status: "pending", activeForm: "Validating" },
+  { content: "Phase 7: Final Report [USER]", status: "pending", activeForm: "Final report" }
+])
+```
+
+**Expanded (When entering Phase 4 - shows sub-tasks):**
+```
+TodoWrite([
+  { content: "Phase 1: Initialization", status: "completed", activeForm: "Initializing" },
+  { content: "Phase 2: Planning", status: "completed", activeForm: "Planning" },
+  { content: "Phase 3: Plan Approval [USER]", status: "completed", activeForm: "Awaiting approval" },
+  { content: "Phase 4: Implementation (6 tasks)", status: "in_progress", activeForm: "Implementing" },
+  { content: "  └─ 4.1 Create API route", status: "completed", activeForm: "Creating API route" },
+  { content: "  └─ 4.2 Add database query", status: "completed", activeForm: "Adding database query" },
+  { content: "  └─ 4.3 Implement auth check", status: "in_progress", activeForm: "Implementing auth check" },
+  { content: "  └─ 4.4 Add input validation", status: "pending", activeForm: "Adding validation" },
+  { content: "  └─ 4.5 Error handling", status: "pending", activeForm: "Adding error handling" },
+  { content: "  └─ 4.6 Write unit tests", status: "pending", activeForm: "Writing tests" },
+  { content: "Phase 5: Issue Resolution", status: "pending", activeForm: "Resolving issues" },
+  { content: "Phase 6: Validation", status: "pending", activeForm: "Validating" },
+  { content: "Phase 7: Final Report [USER]", status: "pending", activeForm: "Final report" }
+])
+```
+
+**Deep Expansion (When sub-task has sub-steps):**
+```
+TodoWrite([
+  ...
+  { content: "  └─ 4.3 Implement auth check", status: "in_progress", activeForm: "Implementing auth" },
+  { content: "      └─ 4.3.1 Add middleware", status: "completed", activeForm: "Adding middleware" },
+  { content: "      └─ 4.3.2 Verify JWT token", status: "in_progress", activeForm: "Verifying JWT" },
+  { content: "      └─ 4.3.3 Check permissions", status: "pending", activeForm: "Checking permissions" },
+  ...
+])
+```
+
+---
+
+### Mandatory Progress Output Rules
+
+| Trigger | Required Output | Format |
+|---------|-----------------|--------|
+| **Every response** | Progress indicator | Compact minimum |
+| **After 2+ tool calls** | Status update | Compact |
+| **Task started** | Task announcement | Standard |
+| **Task completed** | Completion + next | Standard |
+| **Phase transition** | Full dashboard | Full Dashboard |
+| **User touchpoint** | Full dashboard | Full Dashboard |
+| **Issue encountered** | Dashboard + issue | Full + Issue Block |
+| **Resuming work** | Full context restore | Full Dashboard |
+
+---
+
+### "Remaining Items" Summary (ALWAYS Include)
+
+At the end of every response, include a quick remaining items count:
+
+```
+───────────────────────────────────────────────────────
+📋 Remaining: 4 tasks in current phase │ 3 phases after this │ 0 blockers
+───────────────────────────────────────────────────────
+```
+
+Or in compact form:
+```
+[Remaining: 4 tasks │ 3 phases │ 0 blockers]
+```
+
+---
+
+### Context Preservation Across Messages
+
+When work spans multiple messages, ALWAYS start with context restoration:
+
+```markdown
+## Resuming OP Mode Session
+
+**Where we left off:**
+- Phase: 4 (Implementation)
+- Last completed: Task 4.2 (Add database query)
+- Currently working on: Task 4.3 (Implement auth check)
+
+**Full context:**
+{Show Full Dashboard}
+
+**Continuing with Task 4.3...**
+```
+
+---
+
+### Progress Tracking State File
+
+Maintain progress state in session folder for recovery:
+
+```markdown
+# .uop/sessions/{session-id}/PROGRESS_STATE.md
+
+## Current Position
+- Phase: 4
+- Task: 4.3
+- Sub-step: 4.3.2
+
+## Completed Items
+- [x] Phase 1: Initialization
+- [x] Phase 2: Planning
+- [x] Phase 3: Plan Approval
+- [ ] Phase 4: Implementation
+  - [x] 4.1 Create API route
+  - [x] 4.2 Add database query
+  - [ ] 4.3 Implement auth check
+    - [x] 4.3.1 Add middleware
+    - [ ] 4.3.2 Verify JWT token
+    - [ ] 4.3.3 Check permissions
+  - [ ] 4.4-4.6 (pending)
+- [ ] Phase 5-7 (pending)
+
+## Summary Counts
+- Total phases: 7
+- Completed phases: 3
+- Current phase tasks: 6
+- Completed in current: 2
+- Remaining in current: 4
+- Total remaining phases: 4
+
+## Last Updated
+{timestamp}
+```
+
+---
+
+### Anti-Patterns (NEVER DO THESE)
+
+| ❌ NEVER | ✅ ALWAYS |
+|----------|-----------|
+| Skip progress in a response | Include at least compact progress |
+| Say "continuing..." without context | Show where you are + what's next |
+| Complete tasks without updating | Update TodoWrite immediately |
+| Hide remaining work | Show remaining count |
+| Forget hierarchical position | Show parent task context |
+| Assume user remembers | Restore context every response |
 
 ---
 
@@ -773,157 +1586,21 @@ OP Mode coordinates:
 
 ## Success Criteria
 
-Every OP Mode session must:
+Every OP Mode session MUST:
 
-1. **Load memory efficiently** (INDEX first, then targeted)
-2. **Get plan approval** before implementation
-3. **Log all MCP interactions** with tags
-4. **Maintain decision tree** throughout
-5. **Respect iteration limits** (4 max)
-6. **Generate mandatory tests** (1 happy + 2 edge)
-7. **Validate visually** for UI changes
-8. **Present final report** for user approval
-9. **Update history** for future sessions
+1. ✓ Complete Pre-Flight Checklist before Phase 2
+2. ✓ Query RLM history before planning
+3. ✓ Get explicit plan approval from user
+4. ✓ Consult reviewers before every code change
+5. ✓ Log all MCP interactions with tags
+6. ✓ Maintain decision tree throughout
+7. ✓ Respect iteration limits (4 max)
+8. ✓ Generate mandatory tests (1 happy + 2 edge)
+9. ✓ Validate visually for UI changes
+10. ✓ Present final report for user approval
+11. ✓ Update RLM history for future sessions
 
----
-
-## Progress Display Protocol
-
-### CRITICAL: Always Maintain Visible Progress
-
-OP Mode MUST use TodoWrite to maintain a persistent, visible progress tracker that stays on screen throughout the session. This helps both Claude and user track where we are.
-
-### Master Progress Template
-
-At session start, initialize TodoWrite with the full phase outline:
-
-```
-TodoWrite([
-  { content: "Phase 1: Initialization", status: "in_progress", activeForm: "Initializing OP Mode session" },
-  { content: "Phase 2: Planning (RLM + PRD)", status: "pending", activeForm: "Planning with RLM analysis" },
-  { content: "Phase 3: Plan Approval [USER]", status: "pending", activeForm: "Awaiting user plan approval" },
-  { content: "Phase 4: Implementation", status: "pending", activeForm: "Implementing tasks autonomously" },
-  { content: "Phase 5: Issue Resolution", status: "pending", activeForm: "Resolving implementation issues" },
-  { content: "Phase 6: Validation & Testing", status: "pending", activeForm: "Validating and testing changes" },
-  { content: "Phase 7: Final Report [USER]", status: "pending", activeForm: "Presenting final report for approval" }
-])
-```
-
-### During Implementation: Expand to Show Sub-Tasks
-
-When entering Phase 4, expand the todo list to show current task detail:
-
-```
-TodoWrite([
-  { content: "Phase 1: Initialization", status: "completed", activeForm: "Initializing OP Mode session" },
-  { content: "Phase 2: Planning (RLM + PRD)", status: "completed", activeForm: "Planning with RLM analysis" },
-  { content: "Phase 3: Plan Approval [USER]", status: "completed", activeForm: "Awaiting user plan approval" },
-  { content: "Phase 4: Implementation", status: "in_progress", activeForm: "Implementing tasks autonomously" },
-  { content: "  └─ Task 1/5: Create API endpoint", status: "completed", activeForm: "Creating API endpoint" },
-  { content: "  └─ Task 2/5: Add database migration", status: "in_progress", activeForm: "Adding database migration" },
-  { content: "  └─ Task 3/5: Build UI component", status: "pending", activeForm: "Building UI component" },
-  { content: "  └─ Task 4/5: Wire up frontend", status: "pending", activeForm: "Wiring up frontend" },
-  { content: "  └─ Task 5/5: Code review pass", status: "pending", activeForm: "Running code review" },
-  { content: "Phase 5: Issue Resolution", status: "pending", activeForm: "Resolving implementation issues" },
-  { content: "Phase 6: Validation & Testing", status: "pending", activeForm: "Validating and testing changes" },
-  { content: "Phase 7: Final Report [USER]", status: "pending", activeForm: "Presenting final report for approval" }
-])
-```
-
-### Status Dashboard in User Prompts
-
-When presenting to user (Plan Approval or Final Report), ALWAYS include status header:
-
-```markdown
-╔══════════════════════════════════════════════════════════════╗
-║  OP MODE STATUS DASHBOARD                                     ║
-╠══════════════════════════════════════════════════════════════╣
-║  Session: {session_id}                                        ║
-║  Task: {task_summary_short}                                   ║
-╠──────────────────────────────────────────────────────────────╣
-║  OVERALL PROGRESS                                             ║
-║  ████████████░░░░░░░░  Phase 3 of 7  (Plan Approval)         ║
-╠──────────────────────────────────────────────────────────────╣
-║  Phase Status:                                                ║
-║  [✓] 1. Initialization                                        ║
-║  [✓] 2. Planning                                              ║
-║  [→] 3. Plan Approval  ← YOU ARE HERE                         ║
-║  [ ] 4. Implementation (0/5 tasks)                            ║
-║  [ ] 5. Issue Resolution                                      ║
-║  [ ] 6. Validation                                            ║
-║  [ ] 7. Final Report                                          ║
-╚══════════════════════════════════════════════════════════════╝
-```
-
-### Implementation Progress Dashboard
-
-During implementation, when pausing for user input:
-
-```markdown
-╔══════════════════════════════════════════════════════════════╗
-║  OP MODE - IMPLEMENTATION IN PROGRESS                         ║
-╠══════════════════════════════════════════════════════════════╣
-║  OVERALL: ██████████████░░░░░░  Phase 4 of 7                 ║
-╠──────────────────────────────────────────────────────────────╣
-║  CURRENT PHASE: Implementation                                ║
-║  ████████████░░░░░░░░  Task 3 of 5                           ║
-║                                                               ║
-║  [✓] Task 1: Create API endpoint                              ║
-║  [✓] Task 2: Add database migration                           ║
-║  [→] Task 3: Build UI component  ← PAUSED                     ║
-║  [ ] Task 4: Wire up frontend                                 ║
-║  [ ] Task 5: Code review pass                                 ║
-╠──────────────────────────────────────────────────────────────╣
-║  PAUSE REASON: Design decision needed                         ║
-╚══════════════════════════════════════════════════════════════╝
-```
-
-### Issue Tracking in Dashboard
-
-When issues are being tracked:
-
-```markdown
-╔══════════════════════════════════════════════════════════════╗
-║  OP MODE STATUS                                               ║
-╠══════════════════════════════════════════════════════════════╣
-║  OVERALL: ████████████████░░░░  Phase 5 of 7                 ║
-╠──────────────────────────────────────────────────────────────╣
-║  ISSUES:                                                      ║
-║  [!] ISSUE-001: Type error in API (Attempt 2/4)              ║
-║  [✓] ISSUE-002: Missing import (Resolved)                    ║
-╠──────────────────────────────────────────────────────────────╣
-║  Blocking: NO  |  Active Issues: 1  |  Resolved: 1           ║
-╚══════════════════════════════════════════════════════════════╝
-```
-
-### Update Frequency Rules
-
-| Event | Action |
-|-------|--------|
-| Phase transition | Update TodoWrite + show in output |
-| Task started | Update TodoWrite with sub-task |
-| Task completed | Mark complete, start next |
-| Issue encountered | Add to issues display |
-| Issue resolved | Update issues display |
-| User prompt | Show full dashboard header |
-| Every 3+ tool calls | Quick status line in output |
-
-### Quick Status Line Format
-
-For brief status updates during work:
-
-```
-[OP Mode] Phase 4 | Task 3/5 | Issues: 1 active | Progress: 65%
-```
-
-### Never Lose Track
-
-If context gets long or complex:
-
-1. **Re-read** `.uop/sessions/{session-id}/PLAN.md` for task list
-2. **Check** TodoWrite current state
-3. **Output** status dashboard before continuing
-4. **Confirm** with user if unclear where we left off
+**If any criteria is not met, the session is non-compliant.**
 
 ---
 
@@ -952,3 +1629,5 @@ OP Mode is built on GSD principles and directly leverages:
 ---
 
 **Begin OP Mode workflow when user provides task description.**
+
+**Remember: Gates are not suggestions. They are requirements.**

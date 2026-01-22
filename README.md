@@ -1,8 +1,17 @@
 # OP Mode - Orchestration Protocol for Claude Code
 
+**Version 2.1.0** | [Changelog](commands/op-mode/CHANGELOG.md)
+
 **Unified workflow combining GSD planning, RLM analysis, Subagent execution, and MCP integration.**
 
 OP Mode is a Claude Code skill that provides an end-to-end orchestrated development workflow with only two user touchpoints: Plan Approval and Final Validation.
+
+## What's New in v2.1.0
+
+- **Always-Visible Progress** - Every response includes a progress indicator (non-negotiable)
+- **Hierarchical Task Expansion** - See sub-tasks as work is broken down
+- **Remaining Items Summary** - Always know what's left at a glance
+- **Context Preservation** - Seamless resumption across messages
 
 ## Features
 
@@ -11,7 +20,7 @@ OP Mode is a Claude Code skill that provides an end-to-end orchestrated developm
 - **Iteration Limits** - 4 attempts max per issue, then escalate to Linear/user
 - **Auto-Testing** - Generates 1 happy path + 2 edge case tests
 - **Visual Validation** - Playwright checks for UI changes
-- **Progress Dashboard** - Persistent status display throughout session
+- **Always-Visible Progress** - Persistent progress in every response (v2.1.0)
 - **Living Documentation** - Decision tree, issue tracking, MCP logs auto-updated
 - **GSD Integration** - Deviation rules, checkpoint protocols, goal-backward analysis
 
@@ -72,28 +81,69 @@ xcopy /E /I commands\op-mode %USERPROFILE%\.claude\commands\op-mode
 | 6. Validation | Run tests, visual checks | - |
 | 7. Final Report | Present completion report | **USER** |
 
-## Progress Dashboard
+## Progress Display (v2.1.0)
 
-OP Mode maintains a visible progress tracker throughout:
+OP Mode maintains **always-visible progress** in every response. Three formats adapt to context:
 
+### Compact (Every Response)
 ```
-╔══════════════════════════════════════════════════════════════╗
-║  OP MODE STATUS DASHBOARD                                     ║
-╠══════════════════════════════════════════════════════════════╣
-║  Session: op-2026-01-19-001                                   ║
-║  Task: Add OAuth authentication                               ║
-╠──────────────────────────────────────────────────────────────╣
-║  OVERALL PROGRESS                                             ║
-║  ████████████░░░░░░░░  Phase 4 of 7  (Implementation)        ║
-╠──────────────────────────────────────────────────────────────╣
-║  [✓] 1. Initialization                                        ║
-║  [✓] 2. Planning                                              ║
-║  [✓] 3. Plan Approval                                         ║
-║  [→] 4. Implementation  ← YOU ARE HERE                        ║
-║  [ ] 5. Issue Resolution                                      ║
-║  [ ] 6. Validation                                            ║
-║  [ ] 7. Final Report                                          ║
-╚══════════════════════════════════════════════════════════════╝
+⟦■■■■□□□⟧ Phase 4/7 │ Task 3/8 │ Implementing user auth
+```
+
+### Standard (Task Transitions)
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📊 PROGRESS: ████████████░░░░░░░░ 57% │ Phase 4/7 │ Task 3/8
+   Current: Implementing user authentication endpoint
+   Next up: Add input validation
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+
+### Full Dashboard (Phase Transitions)
+```
+╔══════════════════════════════════════════════════════════════════════════╗
+║  OP MODE PROGRESS DASHBOARD                                               ║
+╠══════════════════════════════════════════════════════════════════════════╣
+║  Session: op-2026-01-22-001                                               ║
+║  Goal: Add OAuth authentication                                           ║
+╠══════════════════════════════════════════════════════════════════════════╣
+║  OVERALL PROGRESS                                                         ║
+║  ████████████████░░░░░░░░░░░░░░  Phase 4 of 7  (Implementation)          ║
+╠══════════════════════════════════════════════════════════════════════════╣
+║  PHASE STATUS                           │  CURRENT TASK BREAKDOWN         ║
+║  ──────────────────────────────────     │  ─────────────────────────────  ║
+║  [✓] 1. Initialization                  │  Phase 4 Tasks:                 ║
+║  [✓] 2. Planning                        │  [✓] 4.1 Create API route       ║
+║  [✓] 3. Plan Approval                   │  [✓] 4.2 Add database query     ║
+║  [→] 4. Implementation  ← YOU ARE HERE  │  [→] 4.3 Implement auth  ← NOW  ║
+║  [ ] 5. Issue Resolution                │  [ ] 4.4 Add validation         ║
+║  [ ] 6. Validation                      │  [ ] 4.5 Error handling         ║
+║  [ ] 7. Final Report                    │  [ ] 4.6 Write tests            ║
+╠══════════════════════════════════════════════════════════════════════════╣
+║  REMAINING WORK SUMMARY                                                   ║
+║  • Current phase: 4 tasks remaining                                       ║
+║  • After this phase: 3 phases (Issues → Validation → Report)             ║
+║  • Known blockers: None                                                   ║
+╚══════════════════════════════════════════════════════════════════════════╝
+```
+
+### Hierarchical Task Expansion
+
+As tasks are broken down, you see the full hierarchy:
+```
+[✓] Phase 4: Implementation (6 tasks)
+  └─ [✓] 4.1 Create API route
+  └─ [✓] 4.2 Add database query
+  └─ [→] 4.3 Implement auth check  ← NOW
+      └─ [✓] 4.3.1 Add middleware
+      └─ [→] 4.3.2 Verify JWT token  ← NOW
+      └─ [ ] 4.3.3 Check permissions
+  └─ [ ] 4.4-4.6 (pending)
+```
+
+### Remaining Items (Always Shown)
+```
+📋 Remaining: 4 tasks in current phase │ 3 phases after this │ 0 blockers
 ```
 
 ## Authority Matrix
@@ -138,6 +188,7 @@ OP Mode maintains session state in `.uop/`:
 │       ├── DECISION_TREE.md    # Living decisions
 │       ├── ISSUES.md           # Issue tracking
 │       ├── MCP_LOG.md          # Tagged MCP interactions
+│       ├── PROGRESS_STATE.md   # Progress tracking for recovery (v2.1.0)
 │       └── VALIDATION.md       # Test results
 ├── history/
 │   ├── decisions/              # Past decisions
@@ -152,6 +203,7 @@ OP Mode maintains session state in `.uop/`:
 ```
 ~/.claude/commands/op-mode/
 ├── SKILL.md                    # Main skill definition
+├── CHANGELOG.md                # Version history (v2.1.0+)
 ├── reference/
 │   ├── authority-matrix.md     # Decision authority rules
 │   └── iteration-protocol.md   # Escalation flow
