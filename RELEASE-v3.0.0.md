@@ -84,11 +84,11 @@ OP Mode v3.0 represents a **75% codebase expansion** and fundamental architectur
 
 **Breaking Changes:**
 1. **Iteration limit reduced to 3** (was 4) — Update any external tooling that expects 4-attempt cycle
-2. **Phase 6 now requires agent-browser** — Install via `npm install -g @anthropic-ai/agent-browser`
+2. **Phase 6 now requires agent-browser** — Install via `npm install -g agent-browser`
 3. **`.uop/` structure expanded** — First run creates new template files (non-breaking, but good to know)
 
 **New Dependencies:**
-- `@anthropic-ai/agent-browser` (global npm package)
+- `agent-browser` (global npm package, published by Vercel)
 - System: Chromium (for headless browser testing)
 
 **Recommended Actions:**
@@ -229,7 +229,7 @@ cd op-mode
 ./install.ps1  # Windows PowerShell
 
 # Install agent-browser globally
-npm install -g @anthropic-ai/agent-browser
+npm install -g agent-browser
 
 # Verify installation
 agent-browser --version
@@ -242,7 +242,7 @@ cd ~/.claude/commands/op-mode  # or wherever you installed it
 git pull origin main
 
 # Install agent-browser if you haven't
-npm install -g @anthropic-ai/agent-browser
+npm install -g agent-browser
 
 # Your existing .uop/ sessions are forward-compatible
 # New template files will be created on first v3.0 run

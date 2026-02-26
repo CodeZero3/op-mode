@@ -1298,7 +1298,7 @@ mcp__linear__create_issue({
 
 ```bash
 # Verify agent-browser is installed
-which agent-browser || npm install -g @anthropic-ai/agent-browser
+which agent-browser || npm install -g agent-browser
 
 # Verify platform (Linux/WSL/macOS only — no native Windows)
 uname -s  # Must return Linux or Darwin

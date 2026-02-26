@@ -31,7 +31,7 @@
 ### 6.0 Pre-Flight Check
 
 # Verify agent-browser is installed
-which agent-browser || npm install -g @anthropic-ai/agent-browser
+which agent-browser || npm install -g agent-browser
 
 # Verify platform (Linux/WSL/macOS only — no native Windows)
 uname -s  # Must return Linux or Darwin
@@ -463,7 +463,7 @@ The 9,312-line `wireframe-tenant-dashboard.html` has multiple sections behind na
 
 ## Installation Checklist
 
-- [ ] Install agent-browser: `npm install -g @anthropic-ai/agent-browser`
+- [ ] Install agent-browser: `npm install -g agent-browser`
 - [ ] Verify Chromium headless is available
 - [ ] Replace Phase 6 in `commands/op-mode/SKILL.md`
 - [ ] Add Heartbeat AI routing entry to Gate 0
