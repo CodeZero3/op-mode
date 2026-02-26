@@ -8,57 +8,108 @@ This protocol defines how OP Mode handles repeated failures during implementatio
 
 ## Attempt Limits
 
-| Issue Type | Max Attempts | Escalation Path |
-|------------|--------------|-----------------|
-| Bug fix | 4 | Linear → Subagent Team → User |
-| Integration | 4 | Subagent Team → Linear → User |
-| Logic error | 4 | Subagent Team → Linear → User |
-| Performance | 3 | Subagent Team → User |
-| Type error | 3 | Auto-resolve or skip |
+### Maximum Attempts Per Issue: **3** (Previously 4)
+
+**Attempt 1:** Apply the most obvious fix based on the error message.
+
+**Attempt 2:** Step back. Re-read the error. Check if the fix attempt changed the error or just moved it. Try a different approach.
+
+**Attempt 3:** This is the last attempt. If this fails, **STOP**.
 
 ---
 
-## Attempt Flow
+## After 3 Failed Attempts — MANDATORY STOP
+
+**DO NOT attempt a 4th fix.** Instead:
+
+### 1. Frame it as architectural:
+
+"This is not a bug. This is an architectural problem that requires a different approach."
+
+### 2. Document what was tried:
+
+| Attempt | What Was Tried | Result |
+|---------|---------------|--------|
+| 1 | {description} | {error} |
+| 2 | {description} | {error} |
+| 3 | {description} | {error} |
+
+### 3. Present to user with options:
+
+- **Option A:** Redesign the approach (go back to Phase 3)
+- **Option B:** Defer this item and continue with other tasks
+- **Option C:** Escalate to human developer with handoff package
+
+### 4. Log to `.uop/sessions/{id}/ISSUES.md`:
+
+```markdown
+Status: BLOCKED_ARCHITECTURAL
+Attempts: 3/3
+Pattern: {what class of problem this is}
+```
+
+---
+
+## Circular Fix Detection
+
+If the current fix attempt is **>70% similar to a previous attempt** (same files, same lines, same type of change) → **STOP IMMEDIATELY**.
+
+Do not count this as an attempt. Flag it:
+
+```
+"I'm going in circles. The same fix keeps being tried and reverted.
+This needs a fundamentally different approach."
+```
+
+---
+
+## The Key Mindset Shift
+
+**3 failures on the same issue means:**
+
+- The error message is misleading, OR
+- The root cause is deeper than the symptom, OR
+- The architecture doesn't support what you're trying to do
+
+**In ALL three cases, more patching makes it worse.**
+
+---
+
+## Attempt Flow (Updated for 3-Failure Stop)
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                     ATTEMPT 1                                │
-│  Try initial solution based on analysis                      │
+│  Try initial solution based on error analysis                │
 └────────────────────────┬────────────────────────────────────┘
                          │ Failed
                          ▼
 ┌─────────────────────────────────────────────────────────────┐
 │                     ATTEMPT 2                                │
-│  Try alternative approach                                    │
-│  - Different algorithm                                       │
-│  - Different library                                         │
+│  Step back and try a different approach                      │
+│  - Different algorithm or pattern                            │
+│  - Different library or method                               │
 │  - Restructured logic                                        │
+│  Check: Did the error change or just move?                   │
 └────────────────────────┬────────────────────────────────────┘
                          │ Failed
                          ▼
 ┌─────────────────────────────────────────────────────────────┐
-│                     ATTEMPT 3                                │
-│  Consult subagent team                                       │
+│                     ATTEMPT 3 (FINAL)                        │
+│  Consult subagent team for fresh perspective                 │
 │  - bug-hunter: Root cause analysis                           │
-│  - backend-reviewer: Logic review                            │
-│  - frontend-reviewer: UI/state review                        │
+│  - reviewer: Architecture/logic review                       │
 │  - Apply team recommendation                                 │
+│  Check for circular fix (>70% similarity to previous)        │
 └────────────────────────┬────────────────────────────────────┘
                          │ Failed
                          ▼
 ┌─────────────────────────────────────────────────────────────┐
-│                     ATTEMPT 4                                │
-│  Final attempt with full team input                          │
-│  - All reviewers consulted                                   │
-│  - Best collective recommendation applied                    │
-└────────────────────────┬────────────────────────────────────┘
-                         │ Failed
-                         ▼
-┌─────────────────────────────────────────────────────────────┐
-│                     ESCALATE                                 │
-│  1. Log to Linear (if available)                             │
-│  2. Classify: BLOCKING or NON-BLOCKING                       │
-│  3. Route based on classification                            │
+│                ARCHITECTURAL STOP (NO ATTEMPT 4)             │
+│  1. Frame as architectural problem                           │
+│  2. Document all 3 attempts                                  │
+│  3. Present options A/B/C to user                            │
+│  4. Log as BLOCKED_ARCHITECTURAL                             │
 └─────────────────────────────────────────────────────────────┘
 ```
 

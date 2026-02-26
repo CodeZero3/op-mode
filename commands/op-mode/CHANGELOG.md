@@ -1,5 +1,55 @@
 # OP Mode Changelog
 
+## v3.0.0 - 2026-02-26
+
+### Major Upgrade: 12 Enhancements + E2E Agent-Browser + Multi-Project Scope
+
+**Breaking Changes:** iteration limits reduced from 4 to 3 attempts, Phase 6 now uses `agent-browser` instead of Playwright MCP.
+
+#### Major Changes
+
+1. **Gate 0 Light Mode Bypass** - Skip Phases 1-4 for simple fixes (typos, CSS, config)
+2. **Phase 6 Replaced** - agent-browser E2E testing (93% token reduction vs Playwright)
+3. **Multi-Project Scope** - `.uop/project.json` enables per-project configuration
+4. **3-Failure Architectural Stop** - Reduced from 4 attempts to 3, with circular fix detection
+5. **Checkpoint & Resume v2** - Phase boundaries + heartbeat (every 10 tool calls) + emergency saves
+6. **TDD Enforcement** - Phase 5.0 mandates red-green-refactor for all implementation
+
+#### New Features
+
+- **Skill Auto-Discovery** - Scans `.claude/skills/`, `.skills/`, `.local-plugins/` and builds runtime manifest
+- **Failure Mode Journal** - Cross-session error memory in `.uop/failures.md`
+- **Change Tracking** - Auto-append plain-English summaries to `.uop/sessions/{id}/CHANGES.md`
+- **Human Handoff Package** - Generate `.uop/handoffs/handoff-{task-id}.md` for developer transitions
+- **Doc Freshness Scanner** - Auto-detect stale references in `/docs` using `.uop/deprecated-terms.json`
+- **Auto-Resume Detection** - Presents checkpoint options at session start
+- **Learning Summaries** - Optional "Explain What You Did" section in Phase 7 reports
+- **Heartbeat Checkpoints** - Lightweight mid-phase saves every 10 tool calls
+
+#### Patterns Absorbed
+
+- **obra/superpowers** - TDD (red-green-refactor), YAGNI/DRY principles, 3-failure stop
+- **Cole Medin E2E skill** - Parallel research agents, agent-browser CLI, DB validation queries
+
+#### Files Modified
+
+- `commands/op-mode/SKILL.md` - 2,691 lines (+1,058 from v2.1.0, +75% growth)
+- `commands/op-mode/reference/iteration-protocol.md` - 344 lines (3-attempt limit)
+
+#### New Template Files (created at runtime in `.uop/`)
+
+- `project.json` - Project identity, tech stack, conventions
+- `skill-manifest.json` - Auto-discovered skills
+- `deprecated-terms.json` - Stale reference terms
+- `failures.md` - Error pattern journal
+- `sessions/{id}/CHECKPOINT.md` - Phase boundary state
+- `sessions/{id}/HEARTBEAT.md` - Mid-phase snapshot
+- `sessions/{id}/EMERGENCY_SAVE.md` - Pre-compaction save
+- `sessions/{id}/CHANGES.md` - Plain English change log
+- `handoffs/handoff-{task-id}.md` - Developer handoff package
+
+---
+
 ## v2.1.0 - 2026-01-22
 
 ### Enhanced: Always-Visible Progress Tracking
