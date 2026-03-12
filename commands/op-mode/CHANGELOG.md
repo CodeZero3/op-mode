@@ -1,5 +1,94 @@
 # OP Mode Changelog
 
+## v3.2.0 - 2026-03-11
+
+### New: Knowledge Asset Check (Enhancement 14)
+
+**Phase 1.4 gate for content/marketing tasks — query registered NotebookLM notebooks before doing web research or writing from scratch.**
+
+#### Problem It Solves
+
+When generating copy, SEO content, pricing answers, or product documentation, OP Mode previously defaulted to web research or relied on Claude's training data. Both are slower and less accurate than querying a curated, project-specific knowledge base.
+
+#### What's New
+
+- **Phase 1.4: Knowledge Asset Check** — inserted after Phase 1.3 (RLM Historical Query), before Phase 2 (Planning)
+  - Triggers on: copy generation, SEO content, pricing/positioning, product docs, feature explanations
+  - Checks CLAUDE.md `## NotebookLM Notebooks` section for registered notebooks
+  - If match found: runs `notebooklm ask` before any web research
+  - Logs usage in `RLM_CONTEXT.md` as "Knowledge Asset: used notebook <id>"
+- **Routing Table update** — added "Content/Marketing" task type row pointing to `notebooklm` skill
+- **CLAUDE.md convention** — `## NotebookLM Notebooks` section is the registry format; notebook IDs + trigger domains documented there
+
+#### Registered Notebooks (BizPilot project)
+
+| Notebook | ID | Covers |
+|----------|----|--------|
+| BizPilot — AI Receptionist Platform | `72e9d26f` | Copy, SEO, pricing, positioning, verticals |
+| BrightBadge — Daycare Attendance Platform | `a5b4c9e0` | Product docs, safety features, pricing, parent flows |
+
+Both notebooks verified A+ (2026-03-11) — 12 queries tested, zero gaps found.
+
+#### Verification Test (2026-03-11)
+
+Ran 12 queries across both notebooks (6 each). Results:
+- LinkedIn posts, radio scripts, meta descriptions, VC pitch answers — A+
+- Pricing recall (3 tiers, correct), SEO vertical keywords, upsell paths — A+
+- Feature recall (guardian management, allergy handling, staff onboarding) — A+
+- The notebooks self-corrected wrong assumptions (e.g., "5 tiers" → correctly returned 3)
+
+#### Files Modified
+
+- `commands/op-mode/SKILL.md` — Phase 1.4 added, routing table updated
+- `commands/op-mode/CHANGELOG.md` — this entry
+
+---
+
+## v3.1.0 - 2026-03-03
+
+### New: Security Hardening Checklist (Enhancement 13)
+
+**Mandatory security audit gate for Phase 2 (Planning) when task touches auth, RLS, billing, or API endpoints.**
+
+#### Major Addition
+
+- **Security Hardening Checklist** - Phase 2.2 gate that prevents RLS bypasses, privilege escalation, and billing vulnerabilities
+  - 6-part audit: RLS validation, rate limit integrity, budget caps, frontend secrets, admin escalation, kill switches
+  - Based on real BizPilot/Supabase vulnerability pattern: users modifying subscription_tier via application-layer filtering gaps
+  - Forces security architecture decisions early (Phase 2), not at code review
+
+#### New Capabilities
+
+- **RLS Policy Validation** - Automated checks for separate SELECT/INSERT/UPDATE/DELETE policies
+- **Rate Limit Integrity Audit** - Verifies per-account and per-IP limiting, admin-only modifications
+- **Budget Cap with Kill Switch** - Tracks spending, auto-shutoff at cap, hard limits at provider level
+- **Frontend Secret Detection** - Scans for API keys in code and git history
+- **Admin Privilege Escalation Prevention** - Ensures is_admin in separate table with RLS, dual-layer role checking
+- **Failure Mode Journal for Security** - F-XXX entries for vulnerabilities (category: RLS, RATE_LIMIT, BUDGET_CAP, etc.)
+
+#### Documentation
+
+- `docs/OP-MODE-SECURITY-HARDENING.md` - Complete guide (part checklist, part runbook)
+- SQL templates for locking down sensitive tables
+- Project.json addition: `security_requirements[]` + `sensitive_tables[]`
+- RLS test templates for validating policies
+
+#### Files Added
+
+- `docs/OP-MODE-SECURITY-HARDENING.md` (Enhancement 13 full document)
+
+#### When This Runs
+
+- **Automatic:** At start of Phase 2, if task touches auth/RLS/billing/API
+- **Manual:** User says "security audit" or "review this for vulnerabilities"
+- **Triggered:** Any task marked in project.json `security_requirements[]`
+
+#### Real Problem It Solves
+
+BizPilot stored `subscription_tier`, `usage_counters`, `overage_charges` in `tenants` table with no RLS. Application endpoint filtered these in code. One missing WHERE clause = users bypass filter = chaos. This checklist forces the architecture fix (separate admin-only table + RLS policy) instead of relying on code filters.
+
+---
+
 ## v3.0.0 - 2026-02-26
 
 ### Major Upgrade: 12 Enhancements + E2E Agent-Browser + Multi-Project Scope

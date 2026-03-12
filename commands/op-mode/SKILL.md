@@ -214,6 +214,7 @@ User starts Phase 6 (Validation):
 | Performance | - | gsd-executor, gsd-verifier | performance-optimizer.md | backend-reviewer.md |
 | Full Feature | frontend-design/SKILL.md | ALL GSD agents | ALL reviewers | ALL reviewers |
 | Investigation | - | gsd-codebase-mapper, gsd-research-synthesizer | bug-hunter.md | - |
+| **Content/Marketing** | **notebooklm** | gsd-research-synthesizer | - | - |
 
 ### Step 0.6: Confirm Reading (MANDATORY)
 
@@ -821,6 +822,42 @@ if resuming_session:
 **You MUST document findings in `.uop/sessions/{session-id}/RLM_CONTEXT.md` before Phase 2.**
 
 **If no relevant history exists:** Document "No prior patterns/decisions/issues found for {area}" - this is still valuable context.
+
+---
+
+### 1.4 Knowledge Asset Check (Content/Marketing Tasks)
+
+**For tasks involving: copy generation, SEO content, pricing/positioning answers, product documentation, marketing ads, feature explanations — check for registered NotebookLM notebooks BEFORE doing web research or writing from scratch.**
+
+```
+╔════════════════════════════════════════════════════════════════════════════╗
+║  KNOWLEDGE ASSET CHECK — Content/Marketing Tasks Only                       ║
+╠════════════════════════════════════════════════════════════════════════════╣
+║                                                                             ║
+║  TRIGGER: Task is one of these types:                                       ║
+║  ✓ "Write copy for..." / "Draft a [format] about..."                        ║
+║  ✓ "What are the pricing tiers / features / verticals?"                     ║
+║  ✓ "SEO keywords / landing page strategy for..."                            ║
+║  ✓ "VC pitch / competitive positioning / moat answer"                       ║
+║  ✓ "How does [feature] work?" (product docs)                                ║
+║                                                                             ║
+║  STEPS:                                                                     ║
+║  1. Check CLAUDE.md for "## NotebookLM Notebooks" section                  ║
+║  2. If registered notebooks exist for this domain → USE THEM FIRST         ║
+║     notebooklm use <notebook_id>                                            ║
+║     notebooklm ask "your query"                                             ║
+║  3. If no notebook registered → proceed with normal web/codebase research  ║
+║  4. NEVER do web research on a topic already covered by a registered        ║
+║     notebook — the notebook answer is faster and more accurate              ║
+║                                                                             ║
+║  LOG: Add "Knowledge Asset: used notebook <id>" to RLM_CONTEXT.md          ║
+║                                                                             ║
+╚════════════════════════════════════════════════════════════════════════════╝
+```
+
+**Why:** NotebookLM notebooks are pre-indexed, verified knowledge stores. A `notebooklm ask` query returns in seconds vs minutes of web research, and cites only sources you've curated — no hallucination risk from generic web content.
+
+**Skip this step for:** code tasks, database migrations, bug fixes, infrastructure changes — anything that isn't content/marketing/product docs.
 
 ---
 
