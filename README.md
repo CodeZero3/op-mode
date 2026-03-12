@@ -1,6 +1,6 @@
 # OP Mode - Orchestration Protocol for Claude Code
 
-**Version 2.1.0** | [Changelog](commands/op-mode/CHANGELOG.md)
+**Version 3.2.0** | [Changelog](commands/op-mode/CHANGELOG.md)
 
 **Unified workflow combining GSD planning, RLM analysis, Subagent execution, and MCP integration.**
 
