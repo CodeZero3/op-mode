@@ -758,6 +758,58 @@ MEDIUM:   2-5 files, defined boundaries → RLM targeted scan
 COMPLEX:  6+ files, cross-cutting       → Full RLM recursive analysis
 ```
 
+### 1.1.5 Personal AI OS Context Load (ROMEO's Cross-Project OS)
+
+**Load Romeo's personal profile at every session start — so Claude never starts cold.**
+
+```
+╔════════════════════════════════════════════════════════════════════════════╗
+║  PERSONAL AI OS — CONTEXT LOAD (Runs once per session)                     ║
+╠════════════════════════════════════════════════════════════════════════════╣
+║                                                                             ║
+║  STEP 1: Read memory/ROMEO-PROFILE.md                                      ║
+║    → Section 1: Identity (skill level, stack preferences, communication)   ║
+║    → Section 2: Active projects + current priorities + open loops          ║
+║    → Section 3: Lessons learned (the "never again" list)                  ║
+║    → Section 4: Decision patterns (settled choices — don't relitigate)    ║
+║    → Section 5: Current open loops (A2P, App Store, deployments)          ║
+║                                                                             ║
+║  STEP 2: Output a 3-line session brief                                     ║
+║    Line 1: Which project we're focused on today (if determinable)          ║
+║    Line 2: Highest-priority open loop or active blocker                    ║
+║    Line 3: Any lesson from profile that's directly relevant to this task   ║
+║                                                                             ║
+║  STEP 3 (Optional — when task needs semantic context):                     ║
+║    Query Pinecone for top relevant knowledge                               ║
+║    cd /path/to/project && node scripts/query.js "task description"         ║
+║    Only if task is novel or profile doesn't contain relevant lessons       ║
+║                                                                             ║
+╚════════════════════════════════════════════════════════════════════════════╝
+```
+
+**Session Brief Output Format:**
+```
+🧠 Session Brief (Personal AI OS)
+→ Project: {BizPilot | BrightBadge | Cross-project}
+→ Priority: {highest open loop from Section 5}
+→ Relevant context: {any profile lesson that applies to today's task}
+```
+
+**Example:**
+```
+🧠 Session Brief (Personal AI OS)
+→ Project: BizPilot — admin dashboard sprint
+→ Priority: Twilio A2P still pending (no customer SMS until approved)
+→ Relevant context: Always use additionalProperties:true in Fastify schemas
+  for dynamic objects — fast-json-stringify silently drops unknown keys
+```
+
+**Skip this step only if:** profile is already loaded in this session or task is a 1-line fix.
+
+**ROMEO-PROFILE.md lives at:** `memory/ROMEO-PROFILE.md` (project root)
+
+---
+
 ### 1.2 Load Memory (MANDATORY - NO EXCEPTIONS)
 
 **⛔ You CANNOT skip this step. RLM is your external memory.**
@@ -864,6 +916,61 @@ if resuming_session:
 ## Phase 2: Planning (RLM Active Partner)
 
 ### ⛔ GATE CHECK: Did you query RLM history? If NO, go back to Phase 1.3.
+
+### 2.0.5 Structured Interrogation Gate (Before Every PRD)
+
+**Ask 3-5 focused discovery questions BEFORE generating the PRD. This is the Oara pattern — structured interrogation reduces plan revisions by ~30%.**
+
+```
+╔════════════════════════════════════════════════════════════════════════════╗
+║  STRUCTURED INTERROGATION — Mandatory Before PRD Generation                 ║
+╠════════════════════════════════════════════════════════════════════════════╣
+║                                                                             ║
+║  WHY: Romeo is a guided architect — he sees the vision but details may     ║
+║  be implicit. Asking now prevents mid-implementation course corrections.   ║
+║                                                                             ║
+║  ALWAYS ASK (pick the 3-5 most relevant to the task):                     ║
+║                                                                             ║
+║  SCOPE                                                                      ║
+║  □ "Is this a full replacement or an enhancement to what's already there?" ║
+║  □ "Any parts of the existing system we should NOT touch?"                 ║
+║                                                                             ║
+║  SUCCESS DEFINITION                                                         ║
+║  □ "What does 'done' look like for this? What can you test/click/see?"    ║
+║  □ "Are there edge cases you already know about?"                          ║
+║                                                                             ║
+║  CONSTRAINTS                                                                ║
+║  □ "Is there a deadline / must-have deployment trigger?"                   ║
+║  □ "Should this work in demo mode first, or API-first?"                    ║
+║                                                                             ║
+║  DEPENDENCIES                                                               ║
+║  □ "Does this depend on anything that's not done yet?" (A2P, App Store)   ║
+║  □ "Any services/credentials we need that I might not have?"               ║
+║                                                                             ║
+║  WHEN TO SKIP: If the task is fully specified with clear acceptance        ║
+║  criteria and no ambiguity → proceed directly to 2.1.                     ║
+║  If in doubt → ask. A 2-minute conversation saves 45 minutes of rework.   ║
+║                                                                             ║
+╚════════════════════════════════════════════════════════════════════════════╝
+```
+
+**Output format (before PRD):**
+```markdown
+## Pre-PRD Interrogation
+
+**Q1**: {question}
+**A**: {answer}
+
+**Q2**: {question}
+**A**: {answer}
+
+**Proceeding to PRD with this understanding:**
+{1-paragraph summary of what was confirmed}
+```
+
+**Document in DECISION_TREE.md:** Any constraints or scope limits confirmed during interrogation become baseline decisions (D1, D2...).
+
+---
 
 ### 2.1 Generate PRD
 
@@ -1815,6 +1922,101 @@ data to your server."
 
 ---
 
+## Phase 8: Knowledge Graduation (/graduate + /emerge)
+
+**Run at the end of every significant session before closing. This is how the Personal AI OS learns.**
+
+---
+
+### 8.1 /graduate — Promote Insights to Pinecone
+
+**Scan the session's work and graduate any durable insights to the Personal AI OS knowledge base.**
+
+```
+╔════════════════════════════════════════════════════════════════════════════╗
+║  /GRADUATE PASS — What's Worth Promoting?                                   ║
+╠════════════════════════════════════════════════════════════════════════════╣
+║                                                                             ║
+║  SCAN FOR:                                                                  ║
+║  □ "Never again" discoveries — patterns that would have saved hours        ║
+║  □ Decisions that are now locked in and shouldn't be re-debated            ║
+║  □ External service quirks (Twilio, ElevenLabs, Railway, Pinecone)        ║
+║  □ DB/schema discoveries (column names, constraints, RLS gaps)             ║
+║  □ Security patterns worth repeating                                        ║
+║  □ Framework gotchas (Fastify schema stripping, JWT patterns, etc.)        ║
+║                                                                             ║
+║  HOW TO GRADUATE:                                                           ║
+║                                                                             ║
+║  Option A — Single lesson (inline):                                        ║
+║    cd scripts && node graduate.js --lesson "lesson text here"              ║
+║                                                                             ║
+║  Option B — Update ROMEO-PROFILE.md first, then embed the file:           ║
+║    1. Edit memory/ROMEO-PROFILE.md (Section 3: Lessons Learned)            ║
+║    2. cd scripts && node graduate.js --file ROMEO-PROFILE.md              ║
+║                                                                             ║
+║  Option C — Embed all updated memory files:                                ║
+║    cd scripts && node graduate.js --all                                    ║
+║    (skips credentials.md automatically)                                    ║
+║                                                                             ║
+║  VERIFY: The script outputs "✅ complete — N vectors in [namespace]"       ║
+║  If you see ❌ PINECONE_API_KEY not set — check root .env exists           ║
+║                                                                             ║
+╚════════════════════════════════════════════════════════════════════════════╝
+```
+
+**Decision log:** For every lesson graduated, add to session DECISION_TREE.md:
+```
+| D{N} | Lesson graduated: "{brief}" | Session produced durable insight | GRADUATED |
+```
+
+**Graduate checklist (end of session):**
+```
+- [ ] Any new "never again" lessons?  → graduate.js --lesson "..."
+- [ ] ROMEO-PROFILE.md updated?       → graduate.js --file ROMEO-PROFILE.md
+- [ ] Any architecture memory files changed? → graduate.js --all
+```
+
+---
+
+### 8.2 /emerge — Surface Unnamed Patterns
+
+**The Emerge question: "What patterns or conclusions from today's work haven't been explicitly named yet?"**
+
+This is the difference between a session that ends and a session that *teaches*.
+
+```
+╔════════════════════════════════════════════════════════════════════════════╗
+║  /EMERGE — Session Pattern Synthesis                                        ║
+╠════════════════════════════════════════════════════════════════════════════╣
+║                                                                             ║
+║  ASK YOURSELF (at session end):                                            ║
+║                                                                             ║
+║  1. "What would Future Claude wish it had known at the start?"             ║
+║  2. "What implicit rule did we follow that's never been documented?"       ║
+║  3. "What decision did we make on autopilot that should be explicit?"      ║
+║  4. "What pattern appeared 2+ times and might appear again?"               ║
+║  5. "What did we NOT do that we were tempted to, and why?"                 ║
+║                                                                             ║
+║  OUTPUT FORMAT:                                                             ║
+║                                                                             ║
+║  "Emerge candidates from this session:"                                    ║
+║  1. {unnamed pattern} — worth naming because {why it recurs}               ║
+║  2. {implicit decision} — should be explicit in ROMEO-PROFILE.md          ║
+║  3. {anti-pattern avoided} — future sessions should know to avoid it      ║
+║                                                                             ║
+║  Then for each candidate:                                                  ║
+║  - Add to memory/ROMEO-PROFILE.md (Section 3 or 4)                        ║
+║  - Graduate with: node scripts/graduate.js --lesson "..."                 ║
+║                                                                             ║
+╚════════════════════════════════════════════════════════════════════════════╝
+```
+
+**/emerge is NOT optional** — it's the mechanism that prevents Romeo from explaining the same context twice. If a pattern emerged this session, it should be part of the OS by next session.
+
+**Vault-centric correction pattern:** When Claude makes a repeat mistake, don't just fix the instructions in the session — update `memory/ROMEO-PROFILE.md` so every future session inherits the correction. This is the shift from "patching the agent" to "improving the source of truth."
+
+---
+
 ## MCP Logging Protocol
 
 ### ⛔ EVERY MCP call MUST be logged. No exceptions.
@@ -2296,7 +2498,7 @@ Maintain progress state in session folder for recovery:
 - [ ] Phase 5-7 (pending)
 
 ## Summary Counts
-- Total phases: 7
+- Total phases: 8
 - Completed phases: 3
 - Current phase tasks: 6
 - Completed in current: 2
@@ -2363,6 +2565,8 @@ Every OP Mode session MUST:
 9. ✓ Validate visually for UI changes
 10. ✓ Present final report for user approval
 11. ✓ Update RLM history for future sessions
+12. ✓ Run /graduate pass — graduate durable lessons to Pinecone + ROMEO-PROFILE.md
+13. ✓ Run /emerge — surface unnamed patterns before closing
 
 **If any criteria is not met, the session is non-compliant.**
 

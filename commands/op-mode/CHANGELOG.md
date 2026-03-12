@@ -1,5 +1,79 @@
 # OP Mode Changelog
 
+## v3.3.0 - 2026-03-12
+
+### New: Personal AI OS Integration (Enhancement 15)
+
+**Four additions that make every Claude session context-aware from the start.**
+
+#### Problem It Solves
+
+Every new Claude session started cold. Romeo had to re-explain who he is, what he's building, lessons learned, and current project status — wasting the first 5-10 minutes of every session on context re-establishment.
+
+#### What's New
+
+**1. Phase 1.1.5: Personal AI OS Context Load**
+- Reads `memory/ROMEO-PROFILE.md` at the start of every session
+- Outputs a 3-line session brief: project focus + priority + relevant lesson
+- Optional Pinecone query for task-specific semantic context
+- Prevents "starting cold" — Claude has full situational awareness from response 1
+
+**2. Phase 2.0.5: Structured Interrogation Gate**
+- 3-5 focused discovery questions before PRD generation (Oara pattern)
+- Scope / Success Definition / Constraints / Dependencies framework
+- Covers: Is this a replacement or enhancement? What does "done" look like? Any must-not-touch? Demo mode first or API-first?
+- ~30% reduction in mid-implementation course corrections
+
+**3. Phase 8.1: /graduate — Knowledge Graduation to Pinecone**
+- Scans session work for durable insights ("never again" discoveries)
+- Three graduation modes: `--lesson "text"` / `--file ROMEO-PROFILE.md` / `--all`
+- Runs: `cd scripts && node graduate.js --lesson "..."`
+- Prerequisite: `scripts/pinecone-setup.js` creates the `romeo-personal-os` index
+
+**4. Phase 8.2: /emerge — Session Pattern Synthesis**
+- The emerge question: "What patterns from today's work haven't been explicitly named?"
+- 5 prompts: What would Future Claude wish it had known? What implicit rule did we follow?
+- Outputs: emerge candidates → update ROMEO-PROFILE.md → graduate to Pinecone
+- Vault-centric correction: when Claude makes a repeat mistake, update the profile so every future session inherits the fix
+
+#### Personal AI OS Stack (full design)
+
+| Layer | What | How |
+|-------|------|-----|
+| Layer 1 | `memory/ROMEO-PROFILE.md` | Ground truth — identity, projects, lessons, patterns |
+| Layer 2 | Phase 1.1.5 context load | Session initialization — reads profile, outputs brief |
+| Layer 3 | Phase 8.1 /graduate | Promotes insights to Pinecone (semantic index) |
+| Layer 4 | Phase 8.2 /emerge | Surfaces unnamed patterns at session end |
+| Layer 5 | Pinecone `romeo-personal-os` | Vector search over knowledge base |
+
+#### Files Modified
+
+- `commands/op-mode/SKILL.md` — Phase 1.1.5, Phase 2.0.5, Phase 8 added; Success Criteria updated (13 items); phase count updated to 8
+- `commands/op-mode/CHANGELOG.md` — this entry
+
+#### New Infrastructure Required
+
+| File | Purpose |
+|------|---------|
+| `memory/ROMEO-PROFILE.md` | Personal profile (created 2026-03-12) |
+| `scripts/pinecone-setup.js` | Creates `romeo-personal-os` Pinecone index |
+| `scripts/graduate.js` | /graduate pipeline — chunks, embeds, upserts |
+| Root `.env` | `PINECONE_API_KEY` (gitignored) |
+
+#### Setup
+
+```bash
+# First-time setup
+cd scripts && npm install
+node pinecone-setup.js        # Creates the index (run once)
+
+# After significant sessions
+node graduate.js --all        # Embed all memory files
+node graduate.js --lesson "lesson text here"  # Single lesson
+```
+
+---
+
 ## v3.2.0 - 2026-03-11
 
 ### New: Knowledge Asset Check (Enhancement 14)
