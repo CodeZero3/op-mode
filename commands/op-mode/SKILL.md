@@ -164,9 +164,34 @@ This Pinecone vector creates connective tissue — when querying any of those to
 - After adding, update the source count in `memory/notebooklm.md`
 - If a notebook is near capacity, suggest: merge related sources into a single doc, or archive older low-value sources
 
-⛔ STOP — do NOT enter OP Mode phases
+**STEP 5: Debrief + Actionable Insights**
 
-**Key principle:** Knowledge has no single home. A video about "AI automation for SMBs" belongs in the AI Ops notebook AND the BizPilot notebook AND the SMB Intelligence notebook. Multi-notebook sourcing + Pinecone cross-referencing ensures nothing gets siloed and Claude can always find the connection.
+After sourcing is complete, DO NOT just stop. Query the notebooks you just added to and surface actionable takeaways:
+
+```
+For EACH notebook the video was added to:
+  notebooklm use <notebook_id>
+  notebooklm ask "Based on the newly added source '{video title}', what are the top 2-3 actionable insights or ideas that could improve our system/product/strategy?"
+```
+
+Present a consolidated debrief:
+```
+Ingestion complete — {N} notebooks updated, Pinecone cross-ref graduated.
+
+Actionable insights from this video:
+→ [{notebook name}]: {insight 1} | {insight 2}
+→ [{notebook name}]: {insight 1} | {insight 2}
+→ [{notebook name}]: {insight 1}
+
+Want to act on any of these? Pick one and I'll spin up a full OP Mode session for it.
+Or say "done" to close out.
+```
+
+**If Romeo picks an insight** → transition into normal OP Mode flow (Step 0.0 Task Sizing) with the selected insight as the task description. The video context is already loaded — no cold start.
+
+**If Romeo says "done"** → end cleanly. No further phases.
+
+**Key principle:** Knowledge has no single home. A video about "AI automation for SMBs" belongs in the AI Ops notebook AND the BizPilot notebook AND the SMB Intelligence notebook. Multi-notebook sourcing + Pinecone cross-referencing ensures nothing gets siloed and Claude can always find the connection. But ingestion without reflection is wasted — always surface what's actionable.
 
 **URL pattern detection:**
 - YouTube: `youtube.com/watch`, `youtu.be/`, `youtube.com/shorts/`
