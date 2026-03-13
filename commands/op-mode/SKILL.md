@@ -118,12 +118,15 @@ Video Analysis:
 → "{video title}" by {channel}
 → Content: {2-3 sentence summary of what the video covers}
 
-Recommendation:
+Notebooks (adding to ALL that apply):
 → Primary: {notebook name} ({id}) — {why this is the best fit}
-→ Also relevant: {notebook name} ({id}) — {which segments/topics overlap}
+→ Secondary: {notebook name} ({id}) — {which segments/topics overlap}
    {additional notebooks if applicable}
 
-→ Ready to add to {primary notebook name}. Confirm, or redirect?
+Source budget: {notebook}: {current}/{limit} sources
+              {notebook}: {current}/{limit} sources
+
+→ Adding to {N} notebooks. Confirm, or adjust?
 ```
 
 If no good fit:
@@ -133,13 +136,32 @@ If no good fit:
   Create new notebook, or pick an existing one?
 ```
 
-**STEP 4: Execute after confirmation**
-- `notebooklm use <confirmed_id>`
-- `notebooklm source add "<url>"`
-- If user mentioned secondary notebooks, note them for future follow-up
-- ⛔ STOP — do NOT enter OP Mode phases
+**STEP 4: Multi-Notebook Sourcing + Cross-Reference**
 
-**Key principle:** The video is a scratchpad — analyze it first, THEN classify. A single video may contain nuggets relevant to SEO, marketing, finance, and product simultaneously. Surface that overlap so Romeo can make an informed routing decision.
+After confirmation, add the source to ALL identified notebooks (not just one):
+
+```
+For EACH confirmed notebook:
+  notebooklm use <notebook_id>
+  notebooklm source add "<url>"
+```
+
+Then graduate a cross-reference vector to Pinecone:
+```bash
+node scripts/graduate.js --lesson "VIDEO: {title} | Added to notebooks: {id1} ({name1}), {id2} ({name2}), {id3} ({name3}) | Topics: {comma-separated key topics} | URL: {youtube_url}"
+```
+
+This Pinecone vector creates connective tissue — when querying any of those topics later, the vector database knows which notebooks contain relevant material and prevents information silos.
+
+**Source Budget Rules:**
+- Check `memory/notebooklm.md` for current source counts before adding
+- Free tier: 50 sources/notebook. Warn at 40+. Block at 50.
+- After adding, update the source count in `memory/notebooklm.md`
+- If a notebook is near capacity, suggest: merge related sources into a single doc, or archive older low-value sources
+
+⛔ STOP — do NOT enter OP Mode phases
+
+**Key principle:** Knowledge has no single home. A video about "AI automation for SMBs" belongs in the AI Ops notebook AND the BizPilot notebook AND the SMB Intelligence notebook. Multi-notebook sourcing + Pinecone cross-referencing ensures nothing gets siloed and Claude can always find the connection.
 
 **URL pattern detection:**
 - YouTube: `youtube.com/watch`, `youtu.be/`, `youtube.com/shorts/`
