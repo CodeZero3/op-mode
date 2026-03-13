@@ -91,8 +91,13 @@ Before loading any skill files, assess the incoming task:
 When a bare YouTube URL is detected, do NOT immediately ask "which notebook?" Instead:
 
 **STEP 1: Scratchpad Analysis**
-- Fetch the video page (WebFetch) to get: title, channel name, description
-- From that metadata, produce a 2-3 sentence summary of what the video covers
+- Extract video ID from the URL (the `v=` parameter or youtu.be/ path)
+- Fetch metadata via YouTube oEmbed (fast, clean JSON, ~800 bytes):
+  `WebFetch: https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v={VIDEO_ID}&format=json`
+  → Returns: `title`, `author_name` (channel), `thumbnail_url`
+- Do NOT fetch the full YouTube page (1MB+ of HTML, unreliable parsing)
+- Do NOT fall back to web search or Perplexity for basic metadata — oEmbed is authoritative
+- From the title + channel name, produce a 2-3 sentence summary of what the video likely covers
 - Identify the key topics/domains (e.g., "SEO strategy", "AI agents", "salon marketing")
 
 **STEP 2: Notebook Alignment**
