@@ -64,6 +64,89 @@ Before loading any skill files, assess the incoming task:
 
 ---
 
+### Step 0.0a: Input Preprocessing (URL Router)
+
+**Run BEFORE Task Sizing.** Check if the input is a bare URL with no task description.
+
+```
+╔══════════════════════════════════════════════════════════════════╗
+║  URL ROUTER — Detect and route URL-only inputs                  ║
+╠══════════════════════════════════════════════════════════════════╣
+║                                                                  ║
+║  1. INPUT IS ONLY A URL (no other task text):                   ║
+║     → YouTube URL? Continue to ANALYZE-FIRST flow below.        ║
+║                                                                  ║
+║  2. INPUT IS URL + TASK DESCRIPTION:                            ║
+║     → Note the URL as context material                          ║
+║     → Fall through to Step 0.0 (Task Sizing) normally           ║
+║                                                                  ║
+║  3. NO URL DETECTED:                                            ║
+║     → Fall through immediately                                   ║
+║                                                                  ║
+╚══════════════════════════════════════════════════════════════════╝
+```
+
+#### YouTube ANALYZE-FIRST Flow (v3.3.2)
+
+When a bare YouTube URL is detected, do NOT immediately ask "which notebook?" Instead:
+
+**STEP 1: Scratchpad Analysis**
+- Fetch the video page (WebFetch) to get: title, channel name, description
+- From that metadata, produce a 2-3 sentence summary of what the video covers
+- Identify the key topics/domains (e.g., "SEO strategy", "AI agents", "salon marketing")
+
+**STEP 2: Notebook Alignment**
+- Cross-reference the topics against ALL registered notebooks (from CLAUDE.md):
+
+| ID | Notebook | Domain |
+|----|----------|--------|
+| `72e9d26f` | BizPilot — AI Receptionist Platform | Product copy, SEO, pricing, verticals |
+| `a5b4c9e0` | BrightBadge — Daycare Attendance Platform | Childcare, safety, parent flows |
+| `fbb3fc76` | Claude Operations & AI Engineering | Agent patterns, Claude features, AI ops |
+| `daebedb5` | SEO & Web Intelligence | Website trends, ranking, Core Web Vitals |
+| `b8fd338d` | SMB Customer Intelligence | Reddit/FB sentiment, competitor gaps, leads |
+| `f34ff6ce` | Financial Intelligence | Market trends, pricing benchmarks, revenue |
+| `21650c08` | Media & Content Creation | YouTube/IG strategy, AI video workflow |
+
+- Determine the **primary notebook** (best single fit)
+- Flag any **secondary notebooks** where specific segments/nuggets could also apply
+- If NO notebook is a strong fit → recommend creating a new one with a suggested name and scope
+
+**STEP 3: Present Recommendation (MANDATORY — always show this)**
+```
+Video Analysis:
+→ "{video title}" by {channel}
+→ Content: {2-3 sentence summary of what the video covers}
+
+Recommendation:
+→ Primary: {notebook name} ({id}) — {why this is the best fit}
+→ Also relevant: {notebook name} ({id}) — {which segments/topics overlap}
+   {additional notebooks if applicable}
+
+→ Ready to add to {primary notebook name}. Confirm, or redirect?
+```
+
+If no good fit:
+```
+→ No strong notebook match. Suggest creating:
+  "{Proposed Notebook Name}" — for {scope description}
+  Create new notebook, or pick an existing one?
+```
+
+**STEP 4: Execute after confirmation**
+- `notebooklm use <confirmed_id>`
+- `notebooklm source add "<url>"`
+- If user mentioned secondary notebooks, note them for future follow-up
+- ⛔ STOP — do NOT enter OP Mode phases
+
+**Key principle:** The video is a scratchpad — analyze it first, THEN classify. A single video may contain nuggets relevant to SEO, marketing, finance, and product simultaneously. Surface that overlap so Romeo can make an informed routing decision.
+
+**URL pattern detection:**
+- YouTube: `youtube.com/watch`, `youtu.be/`, `youtube.com/shorts/`
+- _Future extensibility:_ GitHub PRs (`github.com/.../pull/`), Notion docs (`notion.so/`), Google Docs — add routes here as needed.
+
+---
+
 ### Step 0.0b: Agent SDK Terminology Alignment (v3.1.0)
 
 OP Mode phases map directly to Anthropic Agent SDK's agent loop:
