@@ -47,15 +47,49 @@ Before loading any skill files, assess the incoming task:
 
 **If LIGHT MODE:**
   → Log task to .uop/sessions/{id}/PROGRESS_STATE.md as "LIGHT MODE"
-  → Skip Phases 1-4
+  → Skip Phases 1-4 EXCEPT the Pinecone query — that is ALWAYS mandatory:
+      ⛔ Run BEFORE touching any file (takes 5 seconds, no exceptions):
+         node scripts/query-pinecone.js "{task_area}"
+         node scripts/query-pinecone.js "{primary_file_or_service_being_touched}"
+      → Review results. If score > 0.5 on any hit, read that context before proceeding.
   → Go directly to Phase 5 (Implementation)
   → Run Phase 6 (Validation) — still mandatory, even for quick fixes
   → Run Phase 7 (Final Report) — abbreviated format (3 lines max)
+  → Graduate any new lesson to Pinecone at Phase 7 (node scripts/graduate.js --lesson "...")
 
 **If FULL MODE:**
   → Continue to Step 0.1 as normal
 
 **Auto: Doc Freshness Scanner runs in Full Mode** (see Utilities section)
+
+---
+
+### Step 0.0b: Agent SDK Terminology Alignment (v3.1.0)
+
+OP Mode phases map directly to Anthropic Agent SDK's agent loop:
+
+| OP Mode Phase | Agent SDK Concept |
+|--------------|-------------------|
+| Phase 1: Init (Gather Context) | `gather_context` — load memory, scan codebase |
+| Phase 2: Plan (Think) | `think` — RLM analysis, PRD, task decomposition |
+| Phase 3: Approve (Gate) | Human-in-the-loop gate |
+| Phase 4: Implement (Act) | `act` — write code, apply migrations |
+| Phase 5: Issues (Act + Observe) | `observe` — run tests, catch failures, iterate |
+| Phase 6: Validate (Observe) | `observe` — E2E tests, health checks |
+| Phase 7: Report | Final output to human |
+
+**Skill placement convention:** Project-level skills live in `.claude/skills/` (auto-discovered in Step 0.1).
+Skills installed via plugin store live in system paths.
+
+**MCP server test pattern (before adding to settings.json):**
+```bash
+claude mcp add <server-name> <command> --args <arg1> <arg2>
+# Test it in a session, then promote to settings.json if stable
+```
+
+**When launching complex subagents (Plan, researcher):** These benefit from extended thinking.
+Include explicit context: task description, relevant files, architectural constraints.
+Subagents are stateless — they do NOT share the parent context window.
 
 ---
 
@@ -214,7 +248,6 @@ User starts Phase 6 (Validation):
 | Performance | - | gsd-executor, gsd-verifier | performance-optimizer.md | backend-reviewer.md |
 | Full Feature | frontend-design/SKILL.md | ALL GSD agents | ALL reviewers | ALL reviewers |
 | Investigation | - | gsd-codebase-mapper, gsd-research-synthesizer | bug-hunter.md | - |
-| **Content/Marketing** | **notebooklm** | gsd-research-synthesizer | - | - |
 
 ### Step 0.6: Confirm Reading (MANDATORY)
 
@@ -758,57 +791,30 @@ MEDIUM:   2-5 files, defined boundaries → RLM targeted scan
 COMPLEX:  6+ files, cross-cutting       → Full RLM recursive analysis
 ```
 
-### 1.1.5 Personal AI OS Context Load (ROMEO's Cross-Project OS)
+### 1.1.5 Vault Context Load (Personal AI OS)
 
-**Load Romeo's personal profile at every session start — so Claude never starts cold.**
+**Invoke `/context-load` to load vault-aware session brief before reading any code.**
+
+This step is MANDATORY for all sessions in the BizPilot/Personal AI OS workspace:
 
 ```
-╔════════════════════════════════════════════════════════════════════════════╗
-║  PERSONAL AI OS — CONTEXT LOAD (Runs once per session)                     ║
-╠════════════════════════════════════════════════════════════════════════════╣
-║                                                                             ║
-║  STEP 1: Read memory/ROMEO-PROFILE.md                                      ║
-║    → Section 1: Identity (skill level, stack preferences, communication)   ║
-║    → Section 2: Active projects + current priorities + open loops          ║
-║    → Section 3: Lessons learned (the "never again" list)                  ║
-║    → Section 4: Decision patterns (settled choices — don't relitigate)    ║
-║    → Section 5: Current open loops (A2P, App Store, deployments)          ║
-║                                                                             ║
-║  STEP 2: Output a 3-line session brief                                     ║
-║    Line 1: Which project we're focused on today (if determinable)          ║
-║    Line 2: Highest-priority open loop or active blocker                    ║
-║    Line 3: Any lesson from profile that's directly relevant to this task   ║
-║                                                                             ║
-║  STEP 3 (Optional — when task needs semantic context):                     ║
-║    Query Pinecone for top relevant knowledge                               ║
-║    cd /path/to/project && node scripts/query.js "task description"         ║
-║    Only if task is novel or profile doesn't contain relevant lessons       ║
-║                                                                             ║
-╚════════════════════════════════════════════════════════════════════════════╝
+Skill: context-load
+→ Reads memory/INDEX.md (vault root)
+→ Reads memory/ROMEO-PROFILE.md (identity + open loops)
+→ Optionally loads topic file based on session intent
+→ Outputs 5-line session brief
 ```
 
-**Session Brief Output Format:**
+**Output example:**
 ```
-🧠 Session Brief (Personal AI OS)
-→ Project: {BizPilot | BrightBadge | Cross-project}
-→ Priority: {highest open loop from Section 5}
-→ Relevant context: {any profile lesson that applies to today's task}
-```
-
-**Example:**
-```
-🧠 Session Brief (Personal AI OS)
-→ Project: BizPilot — admin dashboard sprint
-→ Priority: Twilio A2P still pending (no customer SMS until approved)
-→ Relevant context: Always use additionalProperties:true in Fastify schemas
-  for dynamic objects — fast-json-stringify silently drops unknown keys
+— Romeo's session brief —
+Active: BizPilot (deployed, migration 062) | BrightBadge (App Store review in progress)
+Open loops: A2P pending | BrightBadge in review | Admin dashboard merge
+Vault: 26 notes | Pinecone: 91 vectors
+Ready. What are we building?
 ```
 
-**Skip this step only if:** profile is already loaded in this session or task is a 1-line fix.
-
-**ROMEO-PROFILE.md lives at:** `memory/ROMEO-PROFILE.md` (project root)
-
----
+Skip only if: session was resumed via checkpoint AND context-load already ran in this session.
 
 ### 1.2 Load Memory (MANDATORY - NO EXCEPTIONS)
 
@@ -877,100 +883,9 @@ if resuming_session:
 
 ---
 
-### 1.4 Knowledge Asset Check (Content/Marketing Tasks)
-
-**For tasks involving: copy generation, SEO content, pricing/positioning answers, product documentation, marketing ads, feature explanations — check for registered NotebookLM notebooks BEFORE doing web research or writing from scratch.**
-
-```
-╔════════════════════════════════════════════════════════════════════════════╗
-║  KNOWLEDGE ASSET CHECK — Content/Marketing Tasks Only                       ║
-╠════════════════════════════════════════════════════════════════════════════╣
-║                                                                             ║
-║  TRIGGER: Task is one of these types:                                       ║
-║  ✓ "Write copy for..." / "Draft a [format] about..."                        ║
-║  ✓ "What are the pricing tiers / features / verticals?"                     ║
-║  ✓ "SEO keywords / landing page strategy for..."                            ║
-║  ✓ "VC pitch / competitive positioning / moat answer"                       ║
-║  ✓ "How does [feature] work?" (product docs)                                ║
-║                                                                             ║
-║  STEPS:                                                                     ║
-║  1. Check CLAUDE.md for "## NotebookLM Notebooks" section                  ║
-║  2. If registered notebooks exist for this domain → USE THEM FIRST         ║
-║     notebooklm use <notebook_id>                                            ║
-║     notebooklm ask "your query"                                             ║
-║  3. If no notebook registered → proceed with normal web/codebase research  ║
-║  4. NEVER do web research on a topic already covered by a registered        ║
-║     notebook — the notebook answer is faster and more accurate              ║
-║                                                                             ║
-║  LOG: Add "Knowledge Asset: used notebook <id>" to RLM_CONTEXT.md          ║
-║                                                                             ║
-╚════════════════════════════════════════════════════════════════════════════╝
-```
-
-**Why:** NotebookLM notebooks are pre-indexed, verified knowledge stores. A `notebooklm ask` query returns in seconds vs minutes of web research, and cites only sources you've curated — no hallucination risk from generic web content.
-
-**Skip this step for:** code tasks, database migrations, bug fixes, infrastructure changes — anything that isn't content/marketing/product docs.
-
----
-
 ## Phase 2: Planning (RLM Active Partner)
 
 ### ⛔ GATE CHECK: Did you query RLM history? If NO, go back to Phase 1.3.
-
-### 2.0.5 Structured Interrogation Gate (Before Every PRD)
-
-**Ask 3-5 focused discovery questions BEFORE generating the PRD. This is the Oara pattern — structured interrogation reduces plan revisions by ~30%.**
-
-```
-╔════════════════════════════════════════════════════════════════════════════╗
-║  STRUCTURED INTERROGATION — Mandatory Before PRD Generation                 ║
-╠════════════════════════════════════════════════════════════════════════════╣
-║                                                                             ║
-║  WHY: Romeo is a guided architect — he sees the vision but details may     ║
-║  be implicit. Asking now prevents mid-implementation course corrections.   ║
-║                                                                             ║
-║  ALWAYS ASK (pick the 3-5 most relevant to the task):                     ║
-║                                                                             ║
-║  SCOPE                                                                      ║
-║  □ "Is this a full replacement or an enhancement to what's already there?" ║
-║  □ "Any parts of the existing system we should NOT touch?"                 ║
-║                                                                             ║
-║  SUCCESS DEFINITION                                                         ║
-║  □ "What does 'done' look like for this? What can you test/click/see?"    ║
-║  □ "Are there edge cases you already know about?"                          ║
-║                                                                             ║
-║  CONSTRAINTS                                                                ║
-║  □ "Is there a deadline / must-have deployment trigger?"                   ║
-║  □ "Should this work in demo mode first, or API-first?"                    ║
-║                                                                             ║
-║  DEPENDENCIES                                                               ║
-║  □ "Does this depend on anything that's not done yet?" (A2P, App Store)   ║
-║  □ "Any services/credentials we need that I might not have?"               ║
-║                                                                             ║
-║  WHEN TO SKIP: If the task is fully specified with clear acceptance        ║
-║  criteria and no ambiguity → proceed directly to 2.1.                     ║
-║  If in doubt → ask. A 2-minute conversation saves 45 minutes of rework.   ║
-║                                                                             ║
-╚════════════════════════════════════════════════════════════════════════════╝
-```
-
-**Output format (before PRD):**
-```markdown
-## Pre-PRD Interrogation
-
-**Q1**: {question}
-**A**: {answer}
-
-**Q2**: {question}
-**A**: {answer}
-
-**Proceeding to PRD with this understanding:**
-{1-paragraph summary of what was confirmed}
-```
-
-**Document in DECISION_TREE.md:** Any constraints or scope limits confirmed during interrogation become baseline decisions (D1, D2...).
-
----
 
 ### 2.1 Generate PRD
 
@@ -1115,6 +1030,33 @@ Create `.uop/sessions/{session-id}/DECISION_TREE.md`:
 ## Phase 4: Autonomous Implementation
 
 ### ⛔ GATE CHECK: Did user approve plan in Phase 3? If NO, do not proceed.
+
+### 4.0 Living Plan File Protocol (MANDATORY)
+
+**The plan file is a living document throughout execution — not a one-time artifact.**
+
+#### Rules:
+1. **Mark steps as you go** — update PLAN.md after each step completes:
+   ```
+   - [x] Step 1 — vault config created
+   - [x] Step 2 — ROMEO-PROFILE frontmatter added
+   - [ ] Step 3 — /context-load skill  ← currently here
+   ```
+
+2. **Before any unplanned detour** — annotate in PLAN.md FIRST:
+   ```
+   ⚠️ DEVIATION (Step 3): found unexpected issue — fixing X
+      → Return path: Step 3, /context-load skill
+   ```
+
+3. **After resolving the detour** — update the annotation and restore path:
+   ```
+   ✅ DEVIATION RESOLVED: X fixed → RETURNING to Step 3
+   ```
+
+4. **Never declare sprint "complete"** until ALL originally planned steps are marked ✅ in PLAN.md. If gaps exist, list them explicitly as deferred with reason — do not silently skip.
+
+5. **Resume rule**: Always read PLAN.md before any resumed session. The plan file IS the checkpoint.
 
 ### 4.1 Authority Matrix
 
@@ -1922,101 +1864,6 @@ data to your server."
 
 ---
 
-## Phase 8: Knowledge Graduation (/graduate + /emerge)
-
-**Run at the end of every significant session before closing. This is how the Personal AI OS learns.**
-
----
-
-### 8.1 /graduate — Promote Insights to Pinecone
-
-**Scan the session's work and graduate any durable insights to the Personal AI OS knowledge base.**
-
-```
-╔════════════════════════════════════════════════════════════════════════════╗
-║  /GRADUATE PASS — What's Worth Promoting?                                   ║
-╠════════════════════════════════════════════════════════════════════════════╣
-║                                                                             ║
-║  SCAN FOR:                                                                  ║
-║  □ "Never again" discoveries — patterns that would have saved hours        ║
-║  □ Decisions that are now locked in and shouldn't be re-debated            ║
-║  □ External service quirks (Twilio, ElevenLabs, Railway, Pinecone)        ║
-║  □ DB/schema discoveries (column names, constraints, RLS gaps)             ║
-║  □ Security patterns worth repeating                                        ║
-║  □ Framework gotchas (Fastify schema stripping, JWT patterns, etc.)        ║
-║                                                                             ║
-║  HOW TO GRADUATE:                                                           ║
-║                                                                             ║
-║  Option A — Single lesson (inline):                                        ║
-║    cd scripts && node graduate.js --lesson "lesson text here"              ║
-║                                                                             ║
-║  Option B — Update ROMEO-PROFILE.md first, then embed the file:           ║
-║    1. Edit memory/ROMEO-PROFILE.md (Section 3: Lessons Learned)            ║
-║    2. cd scripts && node graduate.js --file ROMEO-PROFILE.md              ║
-║                                                                             ║
-║  Option C — Embed all updated memory files:                                ║
-║    cd scripts && node graduate.js --all                                    ║
-║    (skips credentials.md automatically)                                    ║
-║                                                                             ║
-║  VERIFY: The script outputs "✅ complete — N vectors in [namespace]"       ║
-║  If you see ❌ PINECONE_API_KEY not set — check root .env exists           ║
-║                                                                             ║
-╚════════════════════════════════════════════════════════════════════════════╝
-```
-
-**Decision log:** For every lesson graduated, add to session DECISION_TREE.md:
-```
-| D{N} | Lesson graduated: "{brief}" | Session produced durable insight | GRADUATED |
-```
-
-**Graduate checklist (end of session):**
-```
-- [ ] Any new "never again" lessons?  → graduate.js --lesson "..."
-- [ ] ROMEO-PROFILE.md updated?       → graduate.js --file ROMEO-PROFILE.md
-- [ ] Any architecture memory files changed? → graduate.js --all
-```
-
----
-
-### 8.2 /emerge — Surface Unnamed Patterns
-
-**The Emerge question: "What patterns or conclusions from today's work haven't been explicitly named yet?"**
-
-This is the difference between a session that ends and a session that *teaches*.
-
-```
-╔════════════════════════════════════════════════════════════════════════════╗
-║  /EMERGE — Session Pattern Synthesis                                        ║
-╠════════════════════════════════════════════════════════════════════════════╣
-║                                                                             ║
-║  ASK YOURSELF (at session end):                                            ║
-║                                                                             ║
-║  1. "What would Future Claude wish it had known at the start?"             ║
-║  2. "What implicit rule did we follow that's never been documented?"       ║
-║  3. "What decision did we make on autopilot that should be explicit?"      ║
-║  4. "What pattern appeared 2+ times and might appear again?"               ║
-║  5. "What did we NOT do that we were tempted to, and why?"                 ║
-║                                                                             ║
-║  OUTPUT FORMAT:                                                             ║
-║                                                                             ║
-║  "Emerge candidates from this session:"                                    ║
-║  1. {unnamed pattern} — worth naming because {why it recurs}               ║
-║  2. {implicit decision} — should be explicit in ROMEO-PROFILE.md          ║
-║  3. {anti-pattern avoided} — future sessions should know to avoid it      ║
-║                                                                             ║
-║  Then for each candidate:                                                  ║
-║  - Add to memory/ROMEO-PROFILE.md (Section 3 or 4)                        ║
-║  - Graduate with: node scripts/graduate.js --lesson "..."                 ║
-║                                                                             ║
-╚════════════════════════════════════════════════════════════════════════════╝
-```
-
-**/emerge is NOT optional** — it's the mechanism that prevents Romeo from explaining the same context twice. If a pattern emerged this session, it should be part of the OS by next session.
-
-**Vault-centric correction pattern:** When Claude makes a repeat mistake, don't just fix the instructions in the session — update `memory/ROMEO-PROFILE.md` so every future session inherits the correction. This is the shift from "patching the agent" to "improving the source of truth."
-
----
-
 ## MCP Logging Protocol
 
 ### ⛔ EVERY MCP call MUST be logged. No exceptions.
@@ -2498,7 +2345,7 @@ Maintain progress state in session folder for recovery:
 - [ ] Phase 5-7 (pending)
 
 ## Summary Counts
-- Total phases: 8
+- Total phases: 7
 - Completed phases: 3
 - Current phase tasks: 6
 - Completed in current: 2
@@ -2565,8 +2412,6 @@ Every OP Mode session MUST:
 9. ✓ Validate visually for UI changes
 10. ✓ Present final report for user approval
 11. ✓ Update RLM history for future sessions
-12. ✓ Run /graduate pass — graduate durable lessons to Pinecone + ROMEO-PROFILE.md
-13. ✓ Run /emerge — surface unnamed patterns before closing
 
 **If any criteria is not met, the session is non-compliant.**
 
