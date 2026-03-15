@@ -598,7 +598,8 @@ Minimum content:
 bash op-mode/commands/op-mode/scripts/op-session.sh end "{session-id}" "COMPLETE" "one-line summary"
 ```
 
-This automatically: clears CURRENT_SESSION, appends entry to `.uop/INDEX.md`.
+This automatically: clears CURRENT_SESSION, appends entry to `.uop/INDEX.md`,
+and commits any pending op-mode changes to the op-mode repo (no push — Romeo decides when to push).
 
 ---
 
@@ -710,6 +711,7 @@ OP Mode phases may trigger skills automatically. Current skill registry:
 | Phase 6 (Validate) | COMPLEX task | codex | `codex exec --profile audit` |
 | Phase 6 (Validate) | Backend changes | railway-deploy | Pre-deploy checks + deploy + health verify |
 | Phase 7 (Close) | Every session | graduate.js | Pinecone knowledge embedding |
+| Phase 7 (Close) | Every session | op-session.sh | Auto-commit dirty op-mode files |
 | Phase 7 (Close) | Full Mode | /emerge pattern | `.uop/history/patterns/` |
 | On interrupt | User request | checkpoint | `memory/SESSION-CHECKPOINT.md` (vault file, not a session file) |
 

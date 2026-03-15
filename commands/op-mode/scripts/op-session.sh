@@ -53,6 +53,40 @@ acquire_lock() {
   trap 'rm -rf "$LOCK_FILE"' EXIT
 }
 
+# ── Auto-commit ──────────────────────────────────────────────────────────────
+
+auto_commit_if_dirty() {
+  local session_id="$1"
+  local summary="$2"
+  local op_mode_root
+  op_mode_root="$(cd "$(dirname "$0")/../../../" && pwd)"
+
+  # Only commit if this is a git repo
+  if [[ ! -d "$op_mode_root/.git" ]]; then
+    return 0
+  fi
+
+  (
+    cd "$op_mode_root"
+    local changes
+    changes="$(git status --porcelain 2>/dev/null)"
+    if [[ -z "$changes" ]]; then
+      echo "  op-mode repo: clean — no commit needed"
+      return 0
+    fi
+
+    local file_count
+    file_count="$(echo "$changes" | wc -l | tr -d ' ')"
+    echo "  op-mode repo: $file_count file(s) changed — committing..."
+    git add -A
+    git commit -m "session($session_id): $summary" \
+               -m "Auto-committed by op-session.sh end" \
+               -m "Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>" \
+      2>&1 | sed 's/^/    /'
+    echo "  op-mode repo: committed"
+  ) || echo "  WARNING: op-mode auto-commit failed (non-fatal)"
+}
+
 # ── Commands ─────────────────────────────────────────────────────────────────
 
 cmd_start() {
@@ -176,6 +210,8 @@ ${index_entry}" "$INDEX_FILE"
     echo "" >> "$INDEX_FILE"
     echo "$index_entry" >> "$INDEX_FILE"
   fi
+
+  auto_commit_if_dirty "$session_id" "$summary"
 
   echo "Session closed: $session_id ($status)"
   echo "  CURRENT_SESSION cleared"
@@ -333,6 +369,8 @@ ${index_entry}" "$INDEX_FILE"
     echo "" >> "$INDEX_FILE"
     echo "$index_entry" >> "$INDEX_FILE"
   fi
+
+  auto_commit_if_dirty "$current" "force-closed session"
 
   echo "  CURRENT_SESSION cleared"
   echo "  INDEX.md updated (marked FORCE-CLOSED)"
