@@ -2,20 +2,19 @@
 
 ## Session Initialization
 
-When starting a new OP Mode session, create this structure:
+When starting a new OP Mode session, `op-session.sh start` creates:
 
 ```
 .uop/sessions/{session-id}/
-├── PLAN.md
-├── DECISION_TREE.md
-├── ISSUES.md
-├── MCP_LOG.md
-└── VALIDATION.md
+├── PLAN.md          ← Living document (plan + gates + decisions + progress + validation + graduation + UNIFY)
+└── FINAL_REPORT.md  ← Written at session close (summary + learnings + graduations)
 ```
+
+**Retired files (do NOT create these):** DECISION_TREE.md, ISSUES.md, MCP_LOG.md, VALIDATION.md, CHANGES.md, HEARTBEAT.md, PROGRESS_STATE.md, RLM_CONTEXT.md, EMERGENCY_SAVE.md
 
 ---
 
-## PLAN.md Template
+## PLAN.md Template (Canonical Section Order)
 
 ```markdown
 # OP Mode Plan - {Session ID}
@@ -24,310 +23,87 @@ When starting a new OP Mode session, create this structure:
 **Task**: {original_task_description}
 **Complexity**: {SIMPLE|MEDIUM|COMPLEX}
 
-## Summary
+## Objective
 
-{2-3 sentence overview}
+{2-3 sentence overview of what we are building/fixing and why}
 
-## Approach
+## Sizing
 
-1. {step_1}
-2. {step_2}
-3. {step_3}
+{LIGHT|FULL|LOOP} — {1-line rationale}
 
-## Files Affected
+## Gate Log
+
+### Gate 1: Session Initialized
+- [x] `op-session.sh start` ran → session ID: {id}
+- [x] CURRENT_SESSION set → verified
+
+### Gate 2: Knowledge Loaded
+- [x] Pinecone query: "{query}" → top score: {score} | hit: {source}
+- [x] INDEX.md read → overdue items: {none | list}
+- [x] Topic file loaded: memory/{file}.md
+- [x] NotebookLM: {skipped — not a product task | queried notebook {id}}
+
+### Gate 3: Plan Approved (Full Mode only)
+- [x] User said: "{approval text}" at {timestamp}
+
+## Tasks
+
+- [ ] Task 1: {description}
+  AC-1: Given X, When Y, Then Z
+- [ ] Task 2: {description}
+  AC-2: Given X, When Y, Then Z
+
+## Files to Modify
 
 | File | Action | Description |
 |------|--------|-------------|
 | {path} | CREATE/MODIFY/DELETE | {what_changes} |
 
-## Dependencies
+## Decisions
 
-- {dependency_1}
-- {dependency_2}
+<!-- Log decisions inline as they're made -->
+| Timestamp | Decision | Category | Rationale |
+|-----------|----------|----------|-----------|
 
-## RLM Context
+## Scope Changes
 
-### Relevant History
-{patterns_or_decisions_from_history}
+<!-- Document any additions/removals from original plan -->
 
-### Potential Conflicts
-{any_historical_issues_to_watch}
+## Validation
 
-## Approval Status
+<!-- Test results, health checks, Codex self-assessment -->
+- [ ] Test suite: {count} passing
+- [ ] Health endpoints: 200 OK
+- [ ] Schema check: no drift
 
-- [ ] User Approved
-- [ ] Approved With Modifications: {modifications}
+### Codex Self-Assessment (MEDIUM task)
+1. Multiple files touched? {YES/NO}
+2. Logic changes? {YES/NO}
+3. Judgment calls? {YES/NO}
+4. Non-obvious? {YES/NO}
+→ Decision: {RUN|SKIP}
 
----
+## Graduation
 
-**Approved By**: {user}
-**Approved At**: {timestamp}
-```
+<!-- Lesson text + status -->
+Lesson: "{lesson text}"
+Status: {completed | deferred — reason}
 
----
+## UNIFY
 
-## DECISION_TREE.md Template
-
-```markdown
-# Decision Tree - {Session ID}
-
-**Session**: {session_id}
-**Created**: {timestamp}
-
-## Baseline Decisions
-
-Decisions made during planning, approved by user:
-
-| ID | Decision | Rationale | Status |
-|----|----------|-----------|--------|
-| D1 | {decision_1} | {why_1} | APPROVED |
-| D2 | {decision_2} | {why_2} | APPROVED |
-
-## Implementation Decisions
-
-Decisions made during autonomous implementation:
-
-| ID | Decision | Category | Authority | Timestamp |
-|----|----------|----------|-----------|-----------|
-| D3 | {decision} | Technical | Auto | {time} |
-
-## Queued for User
-
-Decisions requiring user approval:
-
-### {Decision Title}
-- **ID**: D{n}
-- **Category**: {Design|Scope|Architecture}
-- **Current Plan**: {what_was_planned}
-- **Proposed**: {what_we_want}
-- **Reason**: {why}
-- **Impact**: {effects}
-- **Status**: PENDING
-
-## Change History
-
-| Timestamp | Decision | From | To | Reason | Validated |
-|-----------|----------|------|----|--------|-----------|
-| {time} | D1 | {old} | {new} | {why} | Auto/User |
-
-## Decision Links
-
-Cross-reference to issues and implementation:
-
-| Decision | Related Issues | Files Affected |
-|----------|---------------|----------------|
-| D1 | ISSUE-001 | src/file.ts |
-```
-
----
-
-## ISSUES.md Template
-
-```markdown
-# Issues Log - {Session ID}
-
-**Session**: {session_id}
-**Last Updated**: {timestamp}
-
-## Summary
-
-| Status | Count |
-|--------|-------|
-| Resolved | {n} |
-| Active | {n} |
-| Escalated | {n} |
-| Known Issues | {n} |
-
-## Active Issues
-
-### ISSUE-{ID}: {Title}
-
-**Status**: ATTEMPTING (2/4)
-**Blocking**: YES | NO
-**Category**: BUG | INTEGRATION | LOGIC | PERFORMANCE
-**Decision Link**: D{n}
-**Assigned**: {agent}
-
-#### Attempts
-
-**Attempt 1** - {timestamp}
-- Approach: {description}
-- Result: FAILED
-- Error: {error}
-
-**Attempt 2** - {timestamp}
-- Approach: {description}
-- Result: FAILED
-- Learnings: {insights}
-
----
-
-## Resolved Issues
-
-### ISSUE-{ID}: {Title}
-
-**Resolved**: {timestamp}
-**Resolution**: {what_fixed_it}
-**Attempts**: {n}
-**Solver**: {agent_name}
-
----
-
-## Known Issues (Continuing)
-
-### ISSUE-{ID}: {Title}
-
-**Status**: KNOWN_ISSUE
-**Blocking**: NO
-**Workaround**: {description}
-**Logged To**: Linear #{id} | GitHub #{id}
-**Impact**: {description}
-```
-
----
-
-## MCP_LOG.md Template
-
-```markdown
-# MCP Interaction Log - {Session ID}
-
-**Session**: {session_id}
-**Started**: {timestamp}
-
-## Tags Index
-
-Quick scan reference:
-
-| Tag | Count | Last Used |
-|-----|-------|-----------|
-| DB-READ | {n} | {time} |
-| DB-WRITE | {n} | {time} |
-| UI-CHECK | {n} | {time} |
-
-## Interactions
-
-### {timestamp}
-
-**[{TAG}]** `{tool_name}`
-
-**Input Summary**:
-{condensed_input}
-
-**Result Summary**:
-{condensed_result}
-
-**Context**:
-{why_this_was_called}
-
----
-
-### {timestamp}
-
-**[{TAG}]** `{tool_name}`
-
-...
-
-## Session Summary
-
-| Tool Category | Calls | Success | Failed |
-|---------------|-------|---------|--------|
-| Supabase | {n} | {n} | {n} |
-| Stripe | {n} | {n} | {n} |
-| Playwright | {n} | {n} | {n} |
-| Context7 | {n} | {n} | {n} |
-```
-
----
-
-## VALIDATION.md Template
-
-```markdown
-# Validation Report - {Session ID}
-
-**Session**: {session_id}
-**Completed**: {timestamp}
-
-## Test Results
-
-### Generated Tests
-
-| Test Name | Type | Status | Duration |
-|-----------|------|--------|----------|
-| {test_1} | Happy Path | PASS | {ms} |
-| {test_2} | Edge Case | PASS | {ms} |
-| {test_3} | Edge Case | PASS | {ms} |
-
-### Existing Tests
-
-| Suite | Passed | Failed | Skipped |
-|-------|--------|--------|---------|
-| Unit | {n} | {n} | {n} |
-| Integration | {n} | {n} | {n} |
-| E2E | {n} | {n} | {n} |
-
-## Build Validation
-
-- [ ] TypeScript compilation: PASS
-- [ ] Lint check: PASS
-- [ ] Build successful: PASS
-
-## Visual Validation
-
-### Screenshots
-
-{screenshot_descriptions_or_links}
-
-### Browser Console
-
-- [ ] No errors
-- [ ] No warnings (or acceptable warnings listed)
-
-### Responsive Check
-
-| Breakpoint | Status |
-|------------|--------|
-| Mobile (375px) | PASS |
-| Tablet (768px) | PASS |
-| Desktop (1280px) | PASS |
-
-## Pre-Return Checklist
-
-- [ ] All generated tests pass
-- [ ] No TypeScript errors
-- [ ] No linting errors
-- [ ] UI renders correctly
-- [ ] No console errors
-- [ ] Decision tree updated
-- [ ] Issues documented
-- [ ] MCP log complete
-
-## Final Status
-
-**READY FOR USER REVIEW**
+<!-- Planned vs actual reconciliation -->
+| Task | Status |
+|------|--------|
+| Task 1 from plan | Done |
+| Task 2 from plan | Deferred — reason |
 ```
 
 ---
 
 ## INDEX.md Update Template
 
-When session completes, update `.uop/INDEX.md`:
+When session completes, `op-session.sh end` auto-appends:
 
 ```markdown
-## Recent Sessions
-
-| Session | Date | Task | Status | Key Learnings |
-|---------|------|------|--------|---------------|
-| {id} | {date} | {task} | Complete | {learnings} |
-
-## Pattern Updates
-
-| Pattern | Source Session | Description |
-|---------|----------------|-------------|
-| {name} | {session_id} | {what_learned} |
-
-## Decision Precedents
-
-| Area | Decision | Session | Rationale |
-|------|----------|---------|-----------|
-| {area} | {decision} | {id} | {why} |
+- **Session {id}**: ✅ {STATUS} ({date}) — {summary}
 ```

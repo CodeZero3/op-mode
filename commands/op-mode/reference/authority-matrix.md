@@ -150,3 +150,51 @@ Immediately pause and present to user when:
 | Schema change | User | Pause |
 | Security issue | User | Pause |
 | Cost change | User | Pause |
+
+---
+
+## Gray Zone — Resolved Rulings
+
+Scenarios that fall between auto-decide and ask-Romeo, with explicit rulings:
+
+| Scenario | Authority | Rationale |
+|----------|-----------|-----------|
+| Adding npm package (utility, <5KB) | Auto | Small utils are trivial, easily reversible |
+| Adding npm package (>5KB or native deps) | Ask | Affects bundle size, security surface, build |
+| Retry/backoff logic changes | Auto | Implementation detail, not behavior change |
+| Caching strategy (in-memory) | Auto | No infra change, reversible |
+| Caching strategy (Redis/external) | Ask | New infrastructure dependency |
+| Telemetry/analytics toggles | Ask | Affects data collection, privacy implications |
+| Environment variable additions (non-secret) | Auto | Operational config |
+| Environment variable additions (secret/credential) | Ask | Secrets need secure handling + Railway setup |
+| Log level changes | Auto | Operational, not behavioral |
+| Error message text (internal/dev-facing) | Auto | No user impact |
+| Error message text (user-visible) | Ask | UX impact |
+| SDK version major bump | Ask | Breaking changes possible |
+| SDK version minor/patch bump | Auto | Non-breaking by semver convention |
+| Adding a new Inngest function (cron) | Ask | Affects background job scheduling |
+| Adding a new Inngest function (event-triggered) | Auto if pattern exists | Follow established patterns |
+| Modifying RLS policies | Ask | Security-critical, always review |
+| Adding indexes | Auto | Performance improvement, non-destructive |
+| Dropping indexes | Ask | Could affect query performance |
+
+---
+
+## When Romeo Is Unavailable
+
+If a decision requires Romeo and he hasn't responded within the session:
+
+1. **Document the decision** needed in PLAN.md under `## Queued for Approval`
+2. **Continue with the SAFER option** (less scope, no new deps, no schema changes)
+3. **Flag at session close**: "N decision(s) pending Romeo approval" in FINAL_REPORT
+4. **Never** choose the riskier path just to avoid blocking — the safer path protects Romeo's codebase
+
+```markdown
+## Queued for Approval
+
+### {Decision Title}
+- **Category**: {category from table above}
+- **Options**: A) {safer option — CHOSEN} | B) {preferred but needs approval}
+- **Chose A because**: Romeo unavailable, A is reversible
+- **Status**: PENDING — revisit next session
+```

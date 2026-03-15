@@ -1,5 +1,56 @@
 # OP Mode Changelog
 
+## v3.4.0 - 2026-03-13
+
+### New: Autoresearch + PAUL Framework Integration
+
+**Six additions from Nick Saraev's Autoresearch and Charlie Automates' PAUL framework.**
+
+#### What's New
+
+**1. UNIFY Gate (Phase 7.0) — Mandatory Plan Reconciliation**
+- Before writing the Final Report, reconcile planned tasks vs actual completed
+- Outputs a diff table: DONE / PARTIAL / SKIPPED / CHANGED with delta explanations
+- Flags scope expansion explicitly — prevents "silent drift"
+- Uses acceptance criteria (AC-N) as verification baseline
+
+**2. BDD Acceptance Criteria (Phase 2.3a)**
+- Every task now requires at least one `AC-N: Given/When/Then` criterion before Phase 3
+- AC become the verification checklist in Phase 6 and reconciliation baseline in Phase 7 UNIFY
+- Eliminates "done but broken" tasks
+
+**3. Loop Mode (Task Sizing — Step 0.0)**
+- Third mode alongside LIGHT and FULL for parallelizable batch tasks
+- Fresh agent per iteration, fleet.json context only, results logged to resource.md
+- Post-loop UNIFY for cross-output consistency
+- Examples: batch vertical pages, SEO rewrites, test generation, ad variants
+- Notes Claude Desktop `/schedule` for perpetual loops vs CLI `/loop` (3-day max)
+
+**4. Subagent Quality Gate (Phase 5.1a)**
+- PAUL finding: subagents produce ~70% quality vs in-session for implementation
+- Clear guidance: use subagents for research/validation, avoid for DB queries/security code
+- Mandatory context injection (column-mismatch table, RLS policies) when delegating implementation
+
+**5. webpage-build: Batch Generation (Loop Mode)**
+- Autoresearch pattern for generating multiple independent pages
+- Fresh agent per vertical with brand tokens + blueprint + keywords
+- Post-batch UNIFY checks cross-page consistency (terminology, CTAs, colors, pricing)
+- Comparison pages excluded from Loop Mode (require cross-referencing)
+
+**6. gtm-pipeline: Compound Learning (resource.md)**
+- After each autonomous content iteration, log hypothesis/result/decision to resource.md
+- Future iterations read resource.md before generating — prevents repeating failed hypotheses
+- Implements the "compound learning" pattern from Autoresearch
+
+#### Also Updated
+- `new-product` skill: Removed hardcoded `PROJECT_PRODUCT_MAP` reference — fleet.json auto-routes Sentry webhooks
+
+#### Source Videos
+- Nick Saraev — "Autoresearch = SELF-IMPROVING AI" (notebook `fbb3fc76`)
+- Charlie Automates — "Everyone Uses GSD. Smart Devs Use PAUL." (notebook `fbb3fc76`)
+
+---
+
 ## v3.3.0 - 2026-03-12
 
 ### New: Personal AI OS Integration (Enhancement 15)
