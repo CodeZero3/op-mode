@@ -66,14 +66,15 @@ Example: FULL — 4 files, new Inngest function, DB migration needed
 | Mode | Phases | When |
 |------|--------|------|
 | **LIGHT** | 4-5 + 7 (skip planning/approval) | Single-file, known root cause, docs-only, no architectural decisions |
-| **FULL** | All 7 phases | Multi-file, schema changes, auth/RLS/security, external integrations, ambiguous scope |
+| **FULL** | All 7 phases | Multi-file, schema changes, auth/RLS/security, external integrations, ambiguous scope, OR single-file with architectural decisions |
 | **LOOP** | Batch iterations + UNIFY | Parallelizable independent units, single success metric, no cross-unit deps |
 
 **LOOP MODE workflow:**
-1. Define: metric, iterations, revert threshold
-2. Each iteration: fresh agent, fleet.json context only
-3. Log results to resource.md (compound learning)
-4. Post-loop: UNIFY all outputs for consistency
+1. Gates 1-2 apply (session init + knowledge load). Gate 3 (plan approval) applies to the loop definition, not each iteration.
+2. Define: metric, iterations, revert threshold
+3. Each iteration: fresh agent, fleet.json context only
+4. Log results to resource.md (compound learning)
+5. Post-loop: UNIFY all outputs for consistency
 
 **MANDATORY for ALL modes** — Pinecone query before touching any file:
 ```bash
@@ -464,6 +465,11 @@ codex exec --profile quick -s read-only --full-auto \
 
 Full skill reference: `~/.claude/skills/codex/SKILL.md`
 
+**If Codex CLI is unavailable** (not installed, network error, command fails):
+1. Log to PLAN.md: `Codex audit skipped — CLI unavailable: {error}`
+2. Perform manual review of the same checklist (bugs, security, logic errors)
+3. Flag in FINAL_REPORT: "Codex audit deferred — manual review only"
+
 ### Phase 6.2: E2E Browser Testing (Optional, if agent-browser available)
 
 See `reference/phase6-e2e-testing.md` for the full E2E browser testing protocol using `agent-browser`. This includes:
@@ -705,7 +711,7 @@ OP Mode phases may trigger skills automatically. Current skill registry:
 | Phase 6 (Validate) | Backend changes | railway-deploy | Pre-deploy checks + deploy + health verify |
 | Phase 7 (Close) | Every session | graduate.js | Pinecone knowledge embedding |
 | Phase 7 (Close) | Full Mode | /emerge pattern | `.uop/history/patterns/` |
-| On interrupt | User request | checkpoint | `memory/SESSION-CHECKPOINT.md` |
+| On interrupt | User request | checkpoint | `memory/SESSION-CHECKPOINT.md` (vault file, not a session file) |
 
 Skills are defined in `.claude/skills/` (project) and `~/.claude/skills/` (user).
 Canonical trigger list: CLAUDE.md "Claude Code Skills" section.
